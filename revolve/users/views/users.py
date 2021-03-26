@@ -7,10 +7,12 @@ from rest_framework.response import Response
 from users.models.user import User
 from users.serializers.user import UsersSerializer
 
+from common.serializers import GenericPaginationSerializer
+
 
 class UsersViewSet(ListAPIView):
     serializer_class = UsersSerializer
-    # pagination_class = GenericPaginationSerializer
+    pagination_class = GenericPaginationSerializer
 
     def get_queryset(self):
         result_status = status.HTTP_200_OK
