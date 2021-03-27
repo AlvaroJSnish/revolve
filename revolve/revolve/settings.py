@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # custom apps
     'users',
+    'projects',
 
     # other frameworks
     'rest_framework',

@@ -36,6 +36,7 @@ class SoftDeletionModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
 
     objects = SoftDeletionManager()
     all_objects = SoftDeletionManager(alive_only=False)

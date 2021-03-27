@@ -29,8 +29,7 @@ class SignInView(GenericAPIView):
             result_dict['access_token'] = user.auth_token.key
         else:
             result_status = status.HTTP_400_BAD_REQUEST
-            result_dict["reasons"] = 'Credenciales inválidas'.format(
-                user.email)
+            result_dict["reasons"] = 'Credenciales inválidas'
 
         return Response(result_dict, status=result_status)
 
