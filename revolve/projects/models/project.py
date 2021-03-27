@@ -1,6 +1,7 @@
 from django.core.validators import int_list_validator
-from django.utils.translation import gettext_lazy as _
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from uuid import uuid4
 
 from common.base_models import BaseModel
@@ -38,3 +39,19 @@ class ProjectConfiguration(BaseModel):
     )
     trained = models.BooleanField(default=False)
     last_time_trained = models.DateTimeField(blank=True, null=True)
+
+
+class ProjectConfigFile(BaseModel):
+    name = 'ProjectConfigFile'
+
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    configuration_file = models.OneToOneField(
+        ProjectConfiguration, on_delete=models.CASCADE, related_name='configuration_file')
+    file_url = models.TextField()
+    all_columns = ArrayField(ArrayField(
+        models.CharField(max_length=200, blank=True)))
+    saved_columns = ArrayField(ArrayField(
+        models.CharField(max_length=200, blank=True)))
+    deleted_columns = ArrayField(ArrayField(
+        models.CharField(max_length=200, blank=True)))
+    label = models.CharField(max_length=200)

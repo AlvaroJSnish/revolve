@@ -1,15 +1,35 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 from users.serializers import UsersSerializer
-from projects.models import Project, ProjectConfiguration
+from projects.models import Project, ProjectConfiguration, ProjectConfigFile
+
+
+class ProjectFilesSerializer(ModelSerializer):
+    project_configuration = PrimaryKeyRelatedField(
+        read_only=True, many=False)
+
+    class Meta:
+        model = ProjectConfigFile
+        fields = ('id', 'project_configuration', 'file_url',
+                  'all_columns', 'saved_columns', 'deleted_columns', 'label')
+
+        def create(self, validated_data):
+            project_configuration_id = self.context['view'].kwargs.get(
+                'project_configuration_id')
+            project_configuration = Project.objects.get(
+                id=project_configuration_id)
+            return ProjectConfigFile.objects.create(project_configuration=project_configuration, **validated_data)
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
+    configuration_file = ProjectFilesSerializer(
+        read_only=True, many=False)
+
     class Meta:
         model = ProjectConfiguration
         fields = ('id', 'project_type',
-                  'trained', 'last_time_trained')
-        read_only_fields = ('id',)
+                  'trained', 'last_time_trained', 'configuration_file')
+        read_only_fields = ('id', 'configuration_file')
 
     def create(self, validated_data):
         project_id = self.context['view'].kwargs.get('project_id')
