@@ -61,3 +61,12 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
         configuration_file = ProjectConfigFile.objects.get(
             project_id=self.kwargs['configuration_id'])
         return configuration_file
+
+
+class ProjectConfigurationFilesViewSet(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProjectFilesSerializer
+
+    def get_object(self, queryset=None):
+        configuration_file = ProjectConfigFile.objects.get(
+            id=self.kwargs['configuration_file_id'], configuration_file_id=self.kwargs['configuration_id'])
+        return configuration_file
