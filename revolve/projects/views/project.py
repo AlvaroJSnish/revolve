@@ -36,7 +36,16 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
         return project
 
 
-class ProjectConfigurationViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
+class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProjectConfigurationSerializer
+
+    def get_object(self, queryset=None):
+        project_configuration = ProjectConfiguration.objects.get(
+            project_id=self.kwargs['project_id'], id=self.kwargs['configuration_id'])
+        return project_configuration
+
+
+class ProjectConfigurationCreateViewSet(ListCreateAPIView):
     serializer_class = ProjectConfigurationSerializer
 
     def get_object(self, queryset=None):

@@ -5,6 +5,6 @@ urlpatterns = [
     re_path(r'^projects/?$', ProjectsViewSet.as_view(), name="projects"),
     re_path(r'^projects/(?P<project_id>[0-9_a-zA-Z\-]+)?$', ProjectViewSet.as_view(),
             name="project_configuration"),
-    re_path(r'^projects/(?P<project_id>[0-9_a-zA-Z\-]+)/config?$', ProjectConfigurationViewSet.as_view(),
+    re_path(r'^projects/(?P<project_id>[0-9_a-zA-Z\-]+)/config/(?P<configuration_id>[0-9_a-zA-Z\-]+)?$', ProjectConfigurationViewSet.as_view(),
             name="project_configuration")
 ]

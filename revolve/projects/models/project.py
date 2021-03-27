@@ -29,12 +29,12 @@ class ProjectConfiguration(BaseModel):
         REGRESSION = 'Regresión', _('Regresión')
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    project = models.OneToOneField(
-        Project, on_delete=models.CASCADE, related_name='project_configuration', null=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='project_configuration')
     project_type = models.CharField(
         max_length=40,
         choices=ProjectType.choices,
-        default=ProjectType.CLASSIFICATION,
+        default=ProjectType.REGRESSION,
     )
     trained = models.BooleanField(default=False)
     last_time_trained = models.DateTimeField(blank=True, null=True)

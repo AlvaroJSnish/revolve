@@ -20,7 +20,7 @@ class ProjectConfigurationSerializer(ModelSerializer):
 class ProjectSerializer(ModelSerializer):
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
-        read_only=False, many=False, required=False)
+        read_only=False, many=True, required=False)
 
     class Meta:
         model = Project
@@ -38,7 +38,7 @@ class ProjectSerializer(ModelSerializer):
 class ProjectsSerializer(ModelSerializer):
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
-        read_only=False, many=False, required=False)
+        read_only=False, many=True, required=False)
 
     class Meta:
         model = Project
