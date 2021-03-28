@@ -1,4 +1,8 @@
+from django.contrib.postgres.fields import ArrayField
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+
 
 from users.serializers import UsersSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
@@ -7,6 +11,12 @@ from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 class ProjectFilesSerializer(ModelSerializer):
     project_configuration = PrimaryKeyRelatedField(
         read_only=True, many=False)
+    file_url = serializers.CharField()
+    all_columns = ArrayField(serializers.CharField())
+    saved_columns = ArrayField(serializers.CharField())
+    deleted_columns = ArrayField(serializers.CharField())
+    final_data = ArrayField(serializers.CharField())
+    label = serializers.CharField()
 
     class Meta:
         model = ProjectConfigFile
@@ -22,8 +32,16 @@ class ProjectFilesSerializer(ModelSerializer):
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
+    TYPE_CHOICES = (("CLASSIFICATION", 'Clasificación'),
+                    ("REGRESSION", "Regresión"))
+
     configuration_file = ProjectFilesSerializer(
         read_only=True, many=False)
+    project_type = serializers.ChoiceField(
+        choices=TYPE_CHOICES,
+    )
+    trained = serializers.BooleanField(required=False)
+    last_time_trained = serializers.DateTimeField(required=False)
 
     class Meta:
         model = ProjectConfiguration
@@ -38,6 +56,7 @@ class ProjectConfigurationSerializer(ModelSerializer):
 
 
 class ProjectSerializer(ModelSerializer):
+    project_name = serializers.CharField(max_length=200)
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
         read_only=False, many=True, required=False)
@@ -48,7 +67,11 @@ class ProjectSerializer(ModelSerializer):
         read_only_fields = ('id', 'project_name', 'owner',)
 
     def create(self, validated_data):
-        user = self.context['request'].user
+        user = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+
         return Project.objects.create(owner=user, **validated_data)
 
     def destroy(self, request, *args, **kwargs):

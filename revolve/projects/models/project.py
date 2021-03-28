@@ -16,11 +16,6 @@ class Project(BaseModel):
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_project')
 
-    def delete(self):
-        if self.project_configuration:
-            self.project_configuration.delete()
-        super(Project, self).delete()
-
 
 class ProjectConfiguration(BaseModel):
     name = 'ProjectConfiguration'
@@ -54,4 +49,6 @@ class ProjectConfigFile(BaseModel):
         models.CharField(max_length=200, blank=True)))
     deleted_columns = ArrayField(ArrayField(
         models.CharField(max_length=200, blank=True)))
+    final_data = ArrayField(ArrayField(
+        models.TextField(blank=True)))
     label = models.CharField(max_length=200)

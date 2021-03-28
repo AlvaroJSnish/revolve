@@ -26,6 +26,26 @@ class ProjectsViewSet(ListCreateAPIView):
         else:
             return None
 
+    def post(self, request, *args, **kwargs):
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
+        serializer = self.get_serializer(data=request.data)
+
+        auth = authenticate(request)
+
+        if auth:
+            if not serializer.is_valid():
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = serializer.errors
+            else:
+                project = serializer.save()
+                result_dict = ProjectSerializer(project).data
+        else:
+            result_status = status.HTTP_401_UNAUTHORIZED
+            result_status["reasons"] = 'Not authorized'
+
+        return Response(result_dict, status=result_status)
+
 
 class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProjectSerializer
@@ -53,6 +73,26 @@ class ProjectConfigurationCreateViewSet(ListCreateAPIView):
             project_id=self.kwargs['project_id'])
         return project_configuration
 
+    def post(self, request, *args, **kwargs):
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
+        serializer = self.get_serializer(data=request.data)
+
+        auth = authenticate(request)
+
+        if auth:
+            if not serializer.is_valid():
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = serializer.errors
+            else:
+                project = serializer.save()
+                result_dict = ProjectConfigurationSerializer(project).data
+        else:
+            result_status = status.HTTP_401_UNAUTHORIZED
+            result_status["reasons"] = 'Not authorized'
+
+        return Response(result_dict, status=result_status)
+
 
 class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
     serializer_class = ProjectFilesSerializer
@@ -61,6 +101,26 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
         configuration_file = ProjectConfigFile.objects.get(
             project_id=self.kwargs['configuration_id'])
         return configuration_file
+
+    def post(self, request, *args, **kwargs):
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
+        serializer = self.get_serializer(data=request.data)
+
+        auth = authenticate(request)
+
+        if auth:
+            if not serializer.is_valid():
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = serializer.errors
+            else:
+                p_file = serializer.save()
+                result_dict = ProjectFilesSerializer(p_file).data
+        else:
+            result_status = status.HTTP_401_UNAUTHORIZED
+            result_status["reasons"] = 'Not authorized'
+
+        return Response(result_dict, status=result_status)
 
 
 class ProjectConfigurationFilesViewSet(RetrieveUpdateDestroyAPIView):

@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import permissions, authentication, status, exceptions
 from rest_framework.authentication import TokenAuthentication
@@ -14,8 +16,13 @@ class SignInView(GenericAPIView):
         result_status = status.HTTP_200_OK
         result_dict = {}
 
-        email = request.POST['email']
-        password = request.POST['password']
+        body = json.loads(request.body.decode('utf-8'))
+        email = body.get("email")
+        password = body.get("password")
+
+        # email = request.POST['email']
+        # password = request.POST['password']
+
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
