@@ -36,7 +36,7 @@ class ProjectConfigurationSerializer(ModelSerializer):
                     ("REGRESSION", "Regresión"))
 
     configuration_file = ProjectFilesSerializer(
-        read_only=True, many=False)
+        read_only=True, many=False, required=False)
     project_type = serializers.ChoiceField(
         choices=TYPE_CHOICES,
     )
