@@ -1,9 +1,32 @@
-asgiref==3.3.1
-autopep8==1.5.6
-Django==3.1.7
-djangorestframework==3.12.3
-psycopg2==2.8.6
-pycodestyle==2.7.0
-pytz==2021.1
-sqlparse==0.4.1
-toml==0.10.2
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: osx-64
+asgiref=3.3.1=pyhd8ed1ab_0
+autopep8=1.5.6=pyhd8ed1ab_1
+ca-certificates=2020.12.5=h033912b_0
+certifi=2020.12.5=py38h50d1736_1
+django=3.1.7=pyhd8ed1ab_0
+django-cors-headers=3.4.0=pyh9f0ad1d_0
+djangorestframework=3.12.4=pyhd8ed1ab_0
+krb5=1.17.1=hddcf347_0
+libcxx=10.0.0=1
+libedit=3.1.20191231=h0678c8f_2
+libffi=3.3=hb1e8313_2
+libpq=13.1=h052a64a_2
+ncurses=6.2=h0a44026_1
+openssl=1.1.1k=h0d85af4_0
+pip=21.0.1=py38hecd8cb5_0
+psycopg2=2.8.6=py38hc775865_2
+pycodestyle=2.7.0=pyhd8ed1ab_0
+python=3.8.8=h88f2d9e_4
+python_abi=3.8=1_cp38
+pytz=2021.1=pyhd8ed1ab_0
+readline=8.1=h9ed2024_0
+setuptools=52.0.0=py38hecd8cb5_0
+sqlite=3.35.2=hce871da_0
+sqlparse=0.4.1=pyh9f0ad1d_0
+tk=8.6.10=hb0a8c7a_0
+toml=0.10.2=pyhd8ed1ab_0
+wheel=0.36.2=pyhd3eb1b0_0
+xz=5.2.5=h1de35cc_0
+zlib=1.2.11=h1de35cc_3
