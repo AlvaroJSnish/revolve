@@ -40,15 +40,15 @@ class ProjectConfigFile(BaseModel):
     name = 'ProjectConfigFile'
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    configuration_file = models.OneToOneField(
+    project_configuration = models.OneToOneField(
         ProjectConfiguration, on_delete=models.CASCADE, related_name='configuration_file')
     file_url = models.TextField()
-    all_columns = ArrayField(ArrayField(
-        models.CharField(max_length=200, blank=True)))
-    saved_columns = ArrayField(ArrayField(
-        models.CharField(max_length=200, blank=True)))
-    deleted_columns = ArrayField(ArrayField(
-        models.CharField(max_length=200, blank=True)))
+    all_columns = ArrayField(
+        models.CharField(max_length=200, blank=True), blank=True)
+    saved_columns = ArrayField(
+        models.CharField(max_length=200, blank=True), blank=True)
+    deleted_columns = ArrayField(
+        models.CharField(max_length=200, blank=True), blank=True)
     final_data = ArrayField(ArrayField(
-        models.TextField(blank=True)))
+        models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True), blank=True, null=True)
     label = models.CharField(max_length=200)

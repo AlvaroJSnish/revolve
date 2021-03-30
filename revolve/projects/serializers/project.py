@@ -14,21 +14,17 @@ class ProjectFilesSerializer(ModelSerializer):
     file_url = serializers.CharField()
     all_columns = ArrayField(serializers.CharField())
     saved_columns = ArrayField(serializers.CharField())
-    deleted_columns = ArrayField(serializers.CharField())
-    final_data = ArrayField(serializers.CharField())
+    deleted_columns = ArrayField(serializers.CharField(), blank=True)
+    final_data = ArrayField(ArrayField(serializers.CharField()))
     label = serializers.CharField()
 
     class Meta:
         model = ProjectConfigFile
         fields = ('id', 'project_configuration', 'file_url',
-                  'all_columns', 'saved_columns', 'deleted_columns', 'label')
+                  'all_columns', 'saved_columns', 'deleted_columns', 'label', 'final_data')
 
         def create(self, validated_data):
-            project_configuration_id = self.context['view'].kwargs.get(
-                'project_configuration_id')
-            project_configuration = Project.objects.get(
-                id=project_configuration_id)
-            return ProjectConfigFile.objects.create(project_configuration=project_configuration, **validated_data)
+            return ProjectConfigFile.objects.create(**validated_data)
 
 
 class ProjectConfigurationSerializer(ModelSerializer):

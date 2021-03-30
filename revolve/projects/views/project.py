@@ -99,7 +99,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
 
     def get_object(self, queryset=None):
         configuration_file = ProjectConfigFile.objects.get(
-            project_id=self.kwargs['configuration_id'])
+            project_configuration_id=self.kwargs['configuration_id'])
         return configuration_file
 
     def post(self, request, *args, **kwargs):
@@ -114,7 +114,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                 result_status = status.HTTP_400_BAD_REQUEST
                 result_dict["reasons"] = serializer.errors
             else:
-                p_file = serializer.save()
+                p_file = serializer.save(project_configuration_id=self.kwargs['configuration_id'])
                 result_dict = ProjectFilesSerializer(p_file).data
         else:
             result_status = status.HTTP_401_UNAUTHORIZED

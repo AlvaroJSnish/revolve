@@ -98,7 +98,7 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'revolve',
+        'NAME': 'revolveai',
         'USER': 'root',
         'PASSWORD': 'password',
         'HOST': 'localhost',
