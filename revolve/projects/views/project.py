@@ -3,6 +3,10 @@ import pdb
 import pandas as pd
 import numpy as np
 
+from joblib import dump
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
 from django.db.models import Q
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -123,34 +127,56 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                 result_status = status.HTTP_400_BAD_REQUEST
                 result_dict["reasons"] = serializer.errors
             else:
-                p_file = serializer.save(project_configuration_id=self.kwargs['configuration_id'])
+                p_file = serializer.save(
+                    project_configuration_id=self.kwargs['configuration_id'])
 
                 os.makedirs('uploads/' + request.data['file_url'])
                 p_path = 'uploads/' + request.data['file_url']
 
+                data = request.data['final_data']
+                label = request.data['label']
                 all_columns = np.array(request.data['all_columns'])
                 saved_columns = np.array(request.data['saved_columns'])
                 deleted_columns = np.array(request.data['deleted_columns'])
 
-                dataframe = pd.DataFrame(data=request.data['final_data'], columns=request.data['all_columns'], index=None)
+                dataframe = pd.DataFrame(
+                    data=data, columns=all_columns, index=None)
 
-                dataframe.info()
+                # dataframe.info()
 
                 for column in all_columns:
-                    if column in deleted_columns:
+                    if np.isin(column, deleted_columns):
                         dataframe.drop(column, inplace=True, axis=1)
 
                 dataframe.to_csv(p_path + "/data.csv", index=False)
 
-                original_dataframe, transformed_dataframe = transform_values(dataframe)
+                original_dataframe, transformed_dataframe = transform_values(
+                    dataframe)
 
-                # dataframe_features = transformed_dataframe.drop(request.data['label'], axis=1)
-                # dataframe_labels = transformed_dataframe[request.data['label']].copy()
-                # dataframe_features.to_csv(p_path + "/transformed_dataframe_features.csv", index=False)
-                # dataframe_labels.to_csv(p_path + "/transformed_dataframe_labels.csv", index=False)
+                # datos
+                corr_matrix = original_dataframe.corr()
+                quality_correlation = corr_matrix[label].sort_values(
+                    ascending=False)
+
+                quality_correlation.to_csv(p_path + "/correlation.csv")
+
+                dataframe_features = original_dataframe.drop(
+                    request.data['label'], axis=1)
+                dataframe_labels = original_dataframe[request.data['label']].copy(
+                )
+                dataframe_features.to_csv(
+                    p_path + "/transformed_dataframe_features.csv", index=False)
+                dataframe_labels.to_csv(
+                    p_path + "/transformed_dataframe_labels.csv", index=False)
 
                 dataframe.to_csv(p_path + "/dataframe_final.csv", index=False)
-                np.savetxt(p_path + "/dataframe_transformed.csv", transformed_dataframe, delimiter=',')
+                np.savetxt(p_path + "/dataframe_transformed.csv",
+                           transformed_dataframe, delimiter=',')
+
+                # model training
+                lin_reg = LinearRegression()
+                lin_reg.fit(transformed_dataframe, dataframe_labels)
+                dump(lin_reg, p_path + "/model.joblib")
 
                 result_dict = ProjectFilesSerializer(p_file).data
         else:
