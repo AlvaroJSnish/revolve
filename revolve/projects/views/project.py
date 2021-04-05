@@ -3,6 +3,7 @@ import pdb
 import pandas as pd
 import numpy as np
 
+from datetime import datetime
 from joblib import dump
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -129,6 +130,11 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
             else:
                 p_file = serializer.save(
                     project_configuration_id=self.kwargs['configuration_id'])
+                p_config = ProjectConfiguration.objects.get(
+                    id=self.kwargs['configuration_id'])
+                p_config.trained = True
+                p_config.last_time_trained = datetime.now()
+                p_config.save(force_update=True)
 
                 os.makedirs('uploads/' + request.data['file_url'])
                 p_path = 'uploads/' + request.data['file_url']

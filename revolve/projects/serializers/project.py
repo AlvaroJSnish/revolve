@@ -3,7 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
-
 from users.serializers import UsersSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 
@@ -22,9 +21,6 @@ class ProjectFilesSerializer(ModelSerializer):
         model = ProjectConfigFile
         fields = ('id', 'project_configuration', 'file_url',
                   'all_columns', 'saved_columns', 'deleted_columns', 'label', 'final_data')
-
-        def create(self, validated_data):
-            return ProjectConfigFile.objects.create(**validated_data)
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
