@@ -24,6 +24,8 @@ class ProjectFilesSerializer(ModelSerializer):
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
+    # correlation = serializers.SerializerMethodField('get_correlation')
+
     TYPE_CHOICES = (("CLASSIFICATION", 'Clasificación'),
                     ("REGRESSION", "Regresión"))
 
@@ -34,6 +36,11 @@ class ProjectConfigurationSerializer(ModelSerializer):
     )
     trained = serializers.BooleanField(required=False)
     last_time_trained = serializers.DateTimeField(required=False)
+
+    # def get_correlation(self, obj):
+    #     if not obj.correlation:
+    #         return None
+    #     return obj.correlation
 
     class Meta:
         model = ProjectConfiguration
