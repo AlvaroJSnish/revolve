@@ -19,7 +19,7 @@ def create_model(dataset_features):
 
     optimizer = tf.keras.optimizers.RMSprop(0.001)
     model.compile(loss="mse", optimizer=optimizer,
-                  metrics=['mse'])
+                  metrics=['mse', 'accuracy'])
 
     return model
 
@@ -35,3 +35,5 @@ def build_model(dataset_features, dataset_labels, path):
 
     model = create_model(dataframe)
     fit_model(model, dataframe, dataset_labels, path)
+
+    return model

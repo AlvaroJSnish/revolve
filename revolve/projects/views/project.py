@@ -3,10 +3,14 @@ import pdb
 import pandas as pd
 import numpy as np
 
+import xgboost
+
 from datetime import datetime
 from joblib import dump
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+
+from sklearn.metrics import mean_squared_error, accuracy_score
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV, GridSearchCV
 
 from django.db.models import Q
 from django.contrib.auth import authenticate
@@ -150,43 +154,66 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                         if np.isin(column, deleted_columns):
                             dataframe.drop(column, inplace=True, axis=1)
 
-                    # datos
-                    # corr_matrix = original_dataframe.corr()
-                    # label_correlation = corr_matrix[label].sort_values(
-                    #     ascending=False)
-                    dataframe_features = dataframe.drop(
-                        request.data['label'], axis=1)
-                    dataframe_labels = dataframe[request.data['label']].copy(
-                    )
+                    # features and labels
+                    dataframe_features = dataframe.drop(label, axis=1)
+                    dataframe_labels = dataframe[label].copy()
 
                     # transform the values
-                    original_dataframe, transformed_dataframe = transform_values(
+                    original_dataframe_features, transformed_dataframe_features = transform_values(
                         dataframe_features)
+                    # original_dataframe_labels, transformed_dataframe_labels = transform_values(
+                    #     dataframe_labels)
+
+                    # split data into train and test sets
+                    seed = 7
+                    test_size = 0.2
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        transformed_dataframe_features, dataframe_labels, test_size=test_size, random_state=seed)
 
                     # save data to files
-                    dataframe.to_csv(p_path + "/data.csv",
-                                     index=False)  # basic dataframe
                     # label_correlation.to_csv(
                     #     p_path + "/correlation.csv")  #  correlation
-                    dataframe_features.to_csv(
-                        p_path + "/transformed_dataframe_features.csv", index=False)  # dataframe features
-                    dataframe_labels.to_csv(
-                        p_path + "/transformed_dataframe_labels.csv", index=False)  # dataframe label
-                    dataframe.to_csv(
-                        p_path + "/dataframe_final.csv", index=False)
-                    np.savetxt(p_path + "/dataframe_transformed.csv",
-                               transformed_dataframe, delimiter=',')
+                    # X_train.to_csv(
+                    #     p_path + "/transformed_dataframe_features.csv", index=False)  # dataframe features
+                    # y_train.to_csv(
+                    #     p_path + "/transformed_dataframe_labels.csv", index=False)  # dataframe label
+                    # dataframe.to_csv(
+                    #     p_path + "/dataframe_final.csv", index=False)
+                    # np.savetxt(p_path + "/dataframe_transformed.csv",
+                    #            transformed_dataframe, delimiter=',')
 
                     # model training
-                    # lin_reg = LinearRegression()
-                    # lin_reg.fit(transformed_dataframe, dataframe_labels)
+                    # A parameter grid for XGBoost
+                    params = {
+                        'min_child_weight': [1, 3, 5, 7, 10],
+                        'gamma': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.5, 2, 5],
+                        'subsample': [0.6, 0.8, 1.0],
+                        'colsample_bytree': [0.3, 0.4, 0.6, 0.8, 1.0],
+                        'max_depth': [3, 4, 5, 6, 8, 10, 12, 15, 17, 19, 21],
+                        'learning_rate': [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
+                    }
+                    folds = 100
+                    param_comb = 6
+                    skf = StratifiedKFold(
+                        n_splits=folds, shuffle=True, random_state=1001)
+
+                    xgb = xgboost.XGBRegressor(
+                        n_estimators=600, learning_rate=0.02, nthread=1)
+                    model = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, n_jobs=4, cv=skf.split(
+                        X_train, y_train), verbose=3, random_state=1001)
+                    model.fit(X_train, y_train)
+
                     # dump(lin_reg, p_path + "/model.joblib")
 
-                    build_model(transformed_dataframe,
-                                dataframe_labels, p_path)
-
-                    # new_data = {'correlation': label_correlation}
-                    # new_data.update(request.data)
+                    # testing
+                    y_pred = model.predict(X_test)
+                    mse = mean_squared_error(y_test, y_pred)
+                    predictions = [round(value) for value in y_pred]
+                    accuracy = accuracy_score(y_test, predictions)
+                    print("--------------------------------")
+                    print("Error: ", mse)
+                    print("Accuracy: ", accuracy)
+                    print("--------------------------------")
 
                     p_file = serializer.save(
                         project_configuration_id=self.kwargs['configuration_id'])
