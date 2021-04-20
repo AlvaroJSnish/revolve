@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import joblib
 import numpy as np
 import pandas as pd
 import xgboost
@@ -192,17 +193,11 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                                                    X_train, y_train), verbose=3, random_state=1001)
                     model.fit(X_train, y_train)
 
-                    # dump(lin_reg, p_path + "/model.joblib")
-
                     # testing
                     y_pred = model.predict(X_test)
                     mse = mean_squared_error(y_test, y_pred)
                     predictions = [round(value) for value in y_pred]
                     accuracy = accuracy_score(y_test, predictions)
-                    print("--------------------------------")
-                    print("Error: ", mse)
-                    print("Accuracy: ", accuracy)
-                    print("--------------------------------")
 
                     p_file = serializer.save(
                         project_configuration_id=self.kwargs['configuration_id'])
@@ -210,7 +205,11 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                         id=self.kwargs['configuration_id'])
                     p_config.trained = True
                     p_config.last_time_trained = datetime.now()
+                    p_config.accuracy = accuracy
+                    p_config.error = mse
                     p_config.save(force_update=True)
+
+                    joblib.dump(model, p_path + "/model.joblib")
 
                     result_dict = ProjectFilesSerializer(p_file).data
                 except ValueError:

@@ -1,8 +1,8 @@
-from django.core.validators import int_list_validator
+from uuid import uuid4
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from uuid import uuid4
 
 from common.base_models import BaseModel
 from users.models.user import User
@@ -34,6 +34,8 @@ class ProjectConfiguration(BaseModel):
     )
     trained = models.BooleanField(default=False)
     last_time_trained = models.DateTimeField(blank=True, null=True)
+    accuracy = models.FloatField(blank=True, null=True)
+    error = models.FloatField(blank=True, null=True)
 
 
 class ProjectConfigFile(BaseModel):
@@ -50,5 +52,6 @@ class ProjectConfigFile(BaseModel):
     deleted_columns = ArrayField(
         models.CharField(max_length=200, blank=True), blank=True)
     final_data = ArrayField(ArrayField(
-        models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True), blank=True, null=True)
+        models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True), blank=True,
+        null=True)
     label = models.CharField(max_length=200)

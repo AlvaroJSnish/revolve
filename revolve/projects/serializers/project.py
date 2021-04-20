@@ -1,10 +1,9 @@
 from django.contrib.postgres.fields import ArrayField
-from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
-from users.serializers import UsersSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
+from users.serializers import UsersSerializer
 
 
 class ProjectFilesSerializer(ModelSerializer):
@@ -36,6 +35,8 @@ class ProjectConfigurationSerializer(ModelSerializer):
     )
     trained = serializers.BooleanField(required=False)
     last_time_trained = serializers.DateTimeField(required=False)
+    accuracy = serializers.FloatField(required=False)
+    error = serializers.FloatField(required=False)
 
     # def get_correlation(self, obj):
     #     if not obj.correlation:
@@ -45,7 +46,7 @@ class ProjectConfigurationSerializer(ModelSerializer):
     class Meta:
         model = ProjectConfiguration
         fields = ('id', 'project_type',
-                  'trained', 'last_time_trained', 'configuration_file')
+                  'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error')
         read_only_fields = ('id', 'configuration_file')
 
     def create(self, validated_data):
