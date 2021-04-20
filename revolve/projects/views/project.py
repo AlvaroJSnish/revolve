@@ -1,29 +1,22 @@
 import os
-import pdb
-import pandas as pd
-import numpy as np
-
-import xgboost
-
 from datetime import datetime
-from joblib import dump
 
-from sklearn.metrics import mean_squared_error, accuracy_score
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV, GridSearchCV
-
-from django.db.models import Q
+import numpy as np
+import pandas as pd
+import xgboost
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView
 from rest_framework.response import Response
+from sklearn.metrics import mean_squared_error, accuracy_score
+from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 
-from common.utils import transform_values
+# local files
 from common.serializers import GenericPaginationSerializer
-from nn_models import build_model
+from common.utils import transform_values
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
-
 
 UPLOAD_DIR = '../../uploads/'
 
@@ -138,7 +131,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     os.makedirs('uploads/' + request.data['file_url'])
                     p_path = 'uploads/' + request.data['file_url']
 
-                    # get the data from the request
+                    # get the data from the request
                     data = request.data['final_data']
                     label = request.data['label']
                     all_columns = np.array(request.data['all_columns'])
@@ -159,16 +152,12 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     dataframe_labels = dataframe[label].copy()
 
                     # transform the values
-                    original_dataframe_features, transformed_dataframe_features = transform_values(
-                        dataframe_features)
-                    # original_dataframe_labels, transformed_dataframe_labels = transform_values(
-                    #     dataframe_labels)
+                    transformed_dataframe_features = transform_values(dataframe_features)
+                    # transformed_dataframe_labels = transform_values(dataframe_labels)
 
-                    # split data into train and test sets
-                    seed = 7
                     test_size = 0.2
                     X_train, X_test, y_train, y_test = train_test_split(
-                        transformed_dataframe_features, dataframe_labels, test_size=test_size, random_state=seed)
+                        transformed_dataframe_features, dataframe_labels, test_size=test_size)
 
                     # save data to files
                     # label_correlation.to_csv(
@@ -197,10 +186,10 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     skf = StratifiedKFold(
                         n_splits=folds, shuffle=True, random_state=1001)
 
-                    xgb = xgboost.XGBRegressor(
-                        n_estimators=600, learning_rate=0.02, nthread=1)
-                    model = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, n_jobs=4, cv=skf.split(
-                        X_train, y_train), verbose=3, random_state=1001)
+                    xgb = xgboost.XGBRegressor(n_estimators=600, nthread=1)
+                    model = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, n_jobs=4,
+                                               cv=skf.split(
+                                                   X_train, y_train), verbose=3, random_state=1001)
                     model.fit(X_train, y_train)
 
                     # dump(lin_reg, p_path + "/model.joblib")
