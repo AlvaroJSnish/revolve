@@ -17,8 +17,6 @@ from common.serializers import GenericPaginationSerializer
 from common.utils import transform_values, transform_label
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
-# local files
-from projects.tasks import testing
 
 UPLOAD_DIR = '../../uploads/'
 
@@ -28,17 +26,9 @@ class ProjectsViewSet(ListCreateAPIView):
     pagination_class = GenericPaginationSerializer
 
     def get_queryset(self):
-        result_status = status.HTTP_200_OK
-        result_dict = {}
-
         filter_params = Q()
 
         user = authenticate(self.request)
-
-        res = testing.delay()
-        print("---------------")
-        print(res.state)
-        print("---------------")
 
         if user is not None:
             return Project.objects.filter(filter_params, owner=user).distinct().exclude(is_deleted=True)
