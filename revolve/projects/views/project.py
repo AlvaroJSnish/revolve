@@ -55,12 +55,15 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
 
     def get_object(self, queryset=None):
         project = Project.objects.get(id=self.kwargs['project_id'])
-        project_configuration = ProjectConfiguration.objects.get(project_id=project.id)
+        try:
+            project_configuration = ProjectConfiguration.objects.get(project_id=project.id)
+            task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
+            project_configuration.training_task_status = task_state
+            project_configuration.last_time_trained = datetime.now()
+            project_configuration.save(force_update=True)
+        except:
+            pass
 
-        task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
-        project_configuration.training_task_status = task_state
-        project_configuration.last_time_trained = datetime.now()
-        project_configuration.save(force_update=True)
         return project
 
 
