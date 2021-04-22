@@ -13,11 +13,12 @@ from rest_framework.response import Response
 from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 
-# local files
 from common.serializers import GenericPaginationSerializer
 from common.utils import transform_values, transform_label
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
+# local files
+from projects.tasks import testing
 
 UPLOAD_DIR = '../../uploads/'
 
@@ -33,6 +34,11 @@ class ProjectsViewSet(ListCreateAPIView):
         filter_params = Q()
 
         user = authenticate(self.request)
+
+        res = testing.delay()
+        print("---------------")
+        print(res.state)
+        print("---------------")
 
         if user is not None:
             return Project.objects.filter(filter_params, owner=user).distinct().exclude(is_deleted=True)
