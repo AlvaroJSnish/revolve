@@ -73,6 +73,10 @@ class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
     def get_object(self, queryset=None):
         project_configuration = ProjectConfiguration.objects.get(
             project_id=self.kwargs['project_id'], id=self.kwargs['configuration_id'])
+        task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
+        project_configuration.training_task_status = task_state
+        project_configuration.last_time_trained = datetime.now()
+        project_configuration.save(force_update=True)
         return project_configuration
 
 
