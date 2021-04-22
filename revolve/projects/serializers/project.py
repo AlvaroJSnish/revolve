@@ -23,6 +23,8 @@ class ProjectFilesSerializer(ModelSerializer):
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
+    project = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+
     TYPE_CHOICES = (("CLASSIFICATION", 'Clasificación'),
                     ("REGRESSION", "Regresión"))
 
@@ -48,10 +50,10 @@ class ProjectConfigurationSerializer(ModelSerializer):
 
     class Meta:
         model = ProjectConfiguration
-        fields = ('id', 'project_type',
+        fields = ('id', 'project_type', 'project',
                   'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error', 'training_task_id',
                   'training_task_status')
-        read_only_fields = ('id', 'configuration_file')
+        read_only_fields = ('id', 'configuration_file', 'project')
 
     def create(self, validated_data):
         project_id = self.context['view'].kwargs.get('project_id')
