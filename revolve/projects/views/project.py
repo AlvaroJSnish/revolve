@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold, Randomize
 
 # local files
 from common.serializers import GenericPaginationSerializer
-from common.utils import transform_values
+from common.utils import transform_values, transform_label
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
 
@@ -154,11 +154,11 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
 
                     # transform the values
                     transformed_dataframe_features = transform_values(dataframe_features)
-                    # transformed_dataframe_labels = transform_values(dataframe_labels)
+                    transformed_dataframe_labels = transform_label(dataframe_labels)
 
                     test_size = 0.2
                     X_train, X_test, y_train, y_test = train_test_split(
-                        transformed_dataframe_features, dataframe_labels, test_size=test_size)
+                        transformed_dataframe_features, transformed_dataframe_labels, test_size=test_size)
 
                     # save data to files
                     # label_correlation.to_csv(
@@ -182,16 +182,24 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                         'max_depth': [3, 4, 5, 6, 8, 10, 12, 15, 17, 19, 21],
                         'learning_rate': [0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
                     }
-                    folds = 100
+                    folds = 50
                     param_comb = 6
-                    skf = StratifiedKFold(
-                        n_splits=folds, shuffle=True, random_state=1001)
+                    random_state = 1001
+                    n_estimators = 250
+                    n_thread = 1
+                    n_jobs = 4
 
-                    xgb = xgboost.XGBRegressor(n_estimators=600, nthread=1)
-                    model = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, n_jobs=4,
+                    skf = StratifiedKFold(
+                        n_splits=folds, shuffle=True, random_state=random_state)
+
+                    xgb = xgboost.XGBRegressor(n_estimators=n_estimators, nthread=n_thread)
+                    model = RandomizedSearchCV(xgb, param_distributions=params, n_iter=param_comb, n_jobs=n_jobs,
                                                cv=skf.split(
-                                                   X_train, y_train), verbose=3, random_state=1001)
+                                                   X_train, y_train), verbose=3, random_state=random_state)
+
                     model.fit(X_train, y_train)
+
+                    joblib.dump(model.best_estimator_, p_path + '/model.joblib')
 
                     # testing
                     y_pred = model.predict(X_test)
@@ -208,8 +216,6 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     p_config.accuracy = accuracy
                     p_config.error = mse
                     p_config.save(force_update=True)
-
-                    joblib.dump(model, p_path + "/model.joblib")
 
                     result_dict = ProjectFilesSerializer(p_file).data
                 except ValueError:

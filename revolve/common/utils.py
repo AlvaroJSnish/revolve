@@ -2,7 +2,21 @@ import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+
+
+def transform_label(series):
+    column_type = series.dtype
+    pipeline = None
+
+    if column_type == object:
+        pipeline = LabelEncoder()
+    else:
+        pipeline = numerical_transformer()
+
+    transformed_label = pipeline.fit_transform(series)
+
+    return transformed_label
 
 
 def transform_values(dataframe):
