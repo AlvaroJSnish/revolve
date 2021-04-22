@@ -23,10 +23,16 @@ class ProjectFilesSerializer(ModelSerializer):
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
-    # correlation = serializers.SerializerMethodField('get_correlation')
-
     TYPE_CHOICES = (("CLASSIFICATION", 'Clasificación'),
                     ("REGRESSION", "Regresión"))
+
+    STATUS_CHOICES = (('PENDING', 'Pendiente'),
+                      ('STARTED', 'Empezada'),
+                      ('RETRY', 'Reintentando'),
+                      ('SUCCESS', 'Finalizado'),
+                      ('REVOKED', 'Rechazado'),
+                      ('RECEIVED', 'Recibido'),
+                      ('FAILURE', 'Fallida'))
 
     configuration_file = ProjectFilesSerializer(
         read_only=True, many=False, required=False)
@@ -37,16 +43,14 @@ class ProjectConfigurationSerializer(ModelSerializer):
     last_time_trained = serializers.DateTimeField(required=False)
     accuracy = serializers.FloatField(required=False)
     error = serializers.FloatField(required=False)
-
-    # def get_correlation(self, obj):
-    #     if not obj.correlation:
-    #         return None
-    #     return obj.correlation
+    training_task_id = serializers.UUIDField(required=False)
+    training_task_status = serializers.ChoiceField(choices=STATUS_CHOICES, required=False)
 
     class Meta:
         model = ProjectConfiguration
         fields = ('id', 'project_type',
-                  'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error')
+                  'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error', 'training_task_id',
+                  'training_task_status')
         read_only_fields = ('id', 'configuration_file')
 
     def create(self, validated_data):

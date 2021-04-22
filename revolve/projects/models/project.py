@@ -24,6 +24,15 @@ class ProjectConfiguration(BaseModel):
         CLASSIFICATION = 'Clasificación', _('Clasificación')
         REGRESSION = 'Regresión', _('Regresión')
 
+    class TaskStatus(models.TextChoices):
+        PENDING = 'Pendiente', _('Pendiente')
+        STARTED = 'Empezada', _('Empezada')
+        RETRY = 'Reintentando', _('Reintentando')
+        SUCCESS = 'Finalizado', _('Finalizado')
+        REVOKED = 'Rechazado', _('Rechazado')
+        RECEIVED = 'Recibido', _('Recibido')
+        FAILURE = 'Fallida', _('Fallida')
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name='project_configuration')
@@ -36,6 +45,8 @@ class ProjectConfiguration(BaseModel):
     last_time_trained = models.DateTimeField(blank=True, null=True)
     accuracy = models.FloatField(blank=True, null=True)
     error = models.FloatField(blank=True, null=True)
+    training_task_id = models.UUIDField(blank=True, null=True)
+    training_task_status = models.CharField(max_length=40, choices=TaskStatus.choices, default=TaskStatus.PENDING)
 
 
 class ProjectConfigFile(BaseModel):
