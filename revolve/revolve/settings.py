@@ -157,5 +157,7 @@ REST_FRAMEWORK = {
 # Celery Configuration Options
 CELERY_TIMEZONE = "Europe/Madrid"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
+# para cambiar el tiempo máximo que puede estar ejecutándose una tarea
+# simplemente modificar el primer número, ahora 3 = 3 horas
+CELERY_TASK_TIME_LIMIT = 3 * 3600
 CELERY_RESULT_BACKEND = 'django-db'

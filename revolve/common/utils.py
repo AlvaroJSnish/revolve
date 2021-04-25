@@ -7,16 +7,13 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 
 def transform_label(series):
     column_type = series.dtype
-    pipeline = None
 
     if column_type == object:
         pipeline = LabelEncoder()
-    else:
-        pipeline = numerical_transformer()
+        transformed_label = pipeline.fit_transform(series)
+        return transformed_label
 
-    transformed_label = pipeline.fit_transform(series)
-
-    return transformed_label
+    return series
 
 
 def transform_values(dataframe):
@@ -47,7 +44,7 @@ def transform_values(dataframe):
 
 def numerical_transformer():
     numerical_pipeline = Pipeline(steps=[
-        ('imputer_num', SimpleImputer(strategy='median')),
+        ('imputer_num', SimpleImputer(strategy='median', missing_values=np.nan)),
         ('std_scaler', StandardScaler())
     ])
     return numerical_pipeline

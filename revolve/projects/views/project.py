@@ -128,20 +128,23 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                 result_status = status.HTTP_400_BAD_REQUEST
                 result_dict["reasons"] = serializer.errors
             else:
-                project_configuration_id = self.kwargs['configuration_id']
-                project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
+                try:
+                    project_configuration_id = self.kwargs['configuration_id']
+                    project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
 
-                task = train_regression_model.delay(request.data, project_configuration_id)
+                    p_file = serializer.save(
+                        project_configuration_id=project_configuration_id)
 
-                project_configuration.training_task_id = task.id
-                project_configuration.training_task_status = task.state
-                project_configuration.last_time_trained = timezone.now()
-                project_configuration.save(force_update=True)
+                    task = train_regression_model.delay(request.data, project_configuration_id)
 
-                p_file = serializer.save(
-                    project_configuration_id=project_configuration_id)
+                    project_configuration.training_task_id = task.id
+                    project_configuration.training_task_status = task.state
+                    project_configuration.last_time_trained = timezone.now()
+                    project_configuration.save(force_update=True)
 
-                result_dict = ProjectFilesSerializer(p_file).data
+                    result_dict = ProjectFilesSerializer(p_file).data
+                except ValueError:
+                    print(ValueError)
 
         else:
             result_status = status.HTTP_401_UNAUTHORIZED
