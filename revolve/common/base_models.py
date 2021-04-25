@@ -1,10 +1,10 @@
+from uuid import uuid4
+
 from django.db import models
 from django.utils import timezone
-from uuid import uuid4
 
 
 class SoftDeletionManager(models.Manager):
-
     class SoftDeletionQuerySet(models.QuerySet):
 
         def delete(self):
@@ -60,9 +60,9 @@ class SensibleDataModel(SoftDeletionModel):
 
 
 class BaseModel(SoftDeletionModel):
-
     class Meta:
         abstract = True
+        ordering = ['-id']
 
     def __str__(self):
         return self.name

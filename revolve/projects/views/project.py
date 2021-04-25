@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.contrib.auth import authenticate
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView
 from rest_framework.response import Response
@@ -59,7 +58,7 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
             project_configuration = ProjectConfiguration.objects.get(project_id=project.id)
             task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
             project_configuration.training_task_status = task_state
-            project_configuration.last_time_trained = datetime.now()
+            project_configuration.last_time_trained = timezone.now()
             project_configuration.save(force_update=True)
         except:
             pass
@@ -75,7 +74,7 @@ class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
             project_id=self.kwargs['project_id'], id=self.kwargs['configuration_id'])
         task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
         project_configuration.training_task_status = task_state
-        project_configuration.last_time_trained = datetime.now()
+        project_configuration.last_time_trained = timezone.now()
         project_configuration.save(force_update=True)
         return project_configuration
 
@@ -136,7 +135,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
 
                 project_configuration.training_task_id = task.id
                 project_configuration.training_task_status = task.state
-                project_configuration.last_time_trained = datetime.now()
+                project_configuration.last_time_trained = timezone.now()
                 project_configuration.save(force_update=True)
 
                 p_file = serializer.save(

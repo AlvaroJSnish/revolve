@@ -1,10 +1,10 @@
 import os
-from datetime import datetime
 
 import joblib
 import numpy as np
 import pandas as pd
 import xgboost
+from django.utils import timezone
 from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 
@@ -83,7 +83,7 @@ def train_regression_model(request, project_configuration_id):
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
 
         project_configuration.trained = True
-        project_configuration.last_time_trained = datetime.now()
+        project_configuration.last_time_trained = timezone.now()
         project_configuration.accuracy = accuracy
         project_configuration.error = mse
         project_configuration.training_task_status = 'SUCCESS'
@@ -93,6 +93,6 @@ def train_regression_model(request, project_configuration_id):
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
         os.removedirs('uploads/' + request.data['file_url'])
         project_configuration.trained = False
-        project_configuration.last_time_trained = datetime.now()
+        project_configuration.last_time_trained = timezone.now()
         project_configuration.training_task_status = 'REVOKED'
         project_configuration.save(force_update=True)
