@@ -8,6 +8,7 @@ from common.timer import Timer
 from dataframes import Dataframe
 from nn_models import BasicLinearModel
 from projects.models import ProjectConfiguration
+from stats.models import Stat
 
 
 @shared_task(name="Basic Regression Model Training")
@@ -33,14 +34,19 @@ def train_regression_model(request, project_configuration_id):
 
         elapsed_time = timer.stop()
 
+        # modify project config
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
-
         project_configuration.trained = True
         project_configuration.last_time_trained = timezone.now()
         project_configuration.accuracy = accuracy
         project_configuration.error = error
         project_configuration.training_task_status = 'SUCCESS'
         project_configuration.save(force_update=True)
+
+        # create stats
+        Stat.objects.create(project_type=project_configuration.project_type, project_plan='BASIC',
+                            features_columns=len(df_features), elapsed_time=elapsed_time,
+                            trained_date=timezone.now())
 
     except ValueError:
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)

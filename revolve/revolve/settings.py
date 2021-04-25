@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # custom apps
     'users',
     'projects',
+    'stats',
 
     # other frameworks
     'rest_framework',
