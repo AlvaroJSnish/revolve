@@ -22,7 +22,7 @@ def train_regression_model(request, project_configuration_id):
         all_columns = np.array(request['all_columns'])
         deleted_columns = np.array(request['deleted_columns'])
 
-        dataframe = Dataframe(data, all_columns, deleted_columns, label)
+        dataframe = Dataframe(data, all_columns, deleted_columns, label, p_path)
         df_features, df_labels = dataframe.get_transformed_data()
 
         timer = Timer()

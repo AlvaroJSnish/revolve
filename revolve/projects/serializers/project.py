@@ -1,6 +1,7 @@
+import pandas as pd
 from django.contrib.postgres.fields import ArrayField
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, SerializerMethodField
 
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from users.serializers import UsersSerializer
@@ -23,7 +24,8 @@ class ProjectFilesSerializer(ModelSerializer):
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
-    project = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+    correlation = SerializerMethodField('get_correlation')
+    project = PrimaryKeyRelatedField(read_only=True, many=False)
 
     TYPE_CHOICES = (("CLASSIFICATION", 'Clasificación'),
                     ("REGRESSION", "Regresión"))
@@ -52,8 +54,15 @@ class ProjectConfigurationSerializer(ModelSerializer):
         model = ProjectConfiguration
         fields = ('id', 'project_type', 'project',
                   'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error', 'training_task_id',
-                  'training_task_status')
+                  'training_task_status', 'correlation',)
         read_only_fields = ('id', 'configuration_file', 'project')
+
+    def get_correlation(self, obj):
+        project_id = str(obj.project.id)
+        project_config = str(obj.id)
+        csv = 'uploads/' + project_id + '/' + project_config + '/dataframe.csv'
+        dataframe = pd.read_csv(csv)
+        return dataframe.corrwith(dataframe[obj.configuration_file.label]).to_dict()
 
     def create(self, validated_data):
         project_id = self.context['view'].kwargs.get('project_id')

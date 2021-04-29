@@ -10,17 +10,19 @@ class Dataframe:
     all_columns = np.array([])
     deleted_columns = np.array([])
 
+    path = ""
     dataframe = None
     dataframe_features = None
     dataframe_labels = None
     transformed_dataframe_features = None
     transformed_dataframe_labels = None
 
-    def __init__(self, data, all_columns, deleted_columns, label):
+    def __init__(self, data, all_columns, deleted_columns, label, path):
         self.data = data
         self.all_columns = all_columns
         self.deleted_columns = deleted_columns
         self.label = label
+        self.path = path
 
         self.build_data()
 
@@ -33,6 +35,9 @@ class Dataframe:
                 dataframe.drop(column, inplace=True, axis=1)
 
         self.dataframe = dataframe
+        # save dataframe
+        dataframe.to_csv(self.path + '/dataframe.csv', index=None)
+
         self.dataframe_features = dataframe.drop(self.label, axis=1)
         self.dataframe_labels = dataframe[self.label].copy()
         self.transformed_dataframe_features = transform_values(self.dataframe_features)
