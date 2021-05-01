@@ -28,6 +28,7 @@ ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
+ASGI_APPLICATION = "revolve.asgi.application"
 
 INSTALLED_APPS = [
     # custom apps
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'django_celery_results',
+    'channels',
 
     # django apps
     'django.contrib.admin',
