@@ -61,8 +61,11 @@ class ProjectConfigurationSerializer(ModelSerializer):
         project_id = str(obj.project.id)
         project_config = str(obj.id)
         csv = 'uploads/' + project_id + '/' + project_config + '/dataframe.csv'
-        dataframe = pd.read_csv(csv)
-        return dataframe.corrwith(dataframe[obj.configuration_file.label]).to_dict()
+        try:
+            dataframe = pd.read_csv(csv)
+            return dataframe.corrwith(dataframe[obj.configuration_file.label]).to_dict()
+        except:
+            return None
 
     def create(self, validated_data):
         project_id = self.context['view'].kwargs.get('project_id')

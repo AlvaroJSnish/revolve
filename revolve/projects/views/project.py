@@ -1,3 +1,5 @@
+import shutil
+
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.utils import timezone
@@ -64,6 +66,13 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
             pass
 
         return project
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        dir_to_delete = 'uploads/' + str(instance.id)
+        shutil.rmtree(dir_to_delete)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
