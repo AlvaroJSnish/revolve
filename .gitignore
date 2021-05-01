@@ -143,3 +143,4 @@ uploads
 
 files
 .idea
+*.csv

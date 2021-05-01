@@ -1,10 +1,15 @@
+import csv
+import io
 import shutil
+from uuid import uuid4
 
+import pandas as pd
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from common.serializers import GenericPaginationSerializer
@@ -75,6 +80,27 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ProjectCSV(ListCreateAPIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, *args, **kwargs):
+        temporary_uuid = uuid4()
+
+        file_obj = request.data['file']
+        # parse and convert de the file
+        data_set = file_obj.read().decode('UTF-8')
+        io_string = io.StringIO(data_set)
+
+        # create the csv file
+        with open('temporary_csv/' + str(temporary_uuid) + '.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+                writer.writerow(column)
+
+        df = pd.read_csv('temporary_csv/' + str(temporary_uuid) + '.csv', error_bad_lines=False).fillna('')
+        return Response({'temporary_uuid': str(temporary_uuid), 'columns': df.columns}, status=200)
+
+
 class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
     serializer_class = ProjectConfigurationSerializer
 
@@ -128,6 +154,9 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         result_status = status.HTTP_201_CREATED
         result_dict = {}
+        file_url = request.data['project_id'] + '/' + request.data['project_configuration']
+        request.data['file_url'] = file_url
+        temporary_uuid = request.data['temporary_uuid']
         serializer = self.get_serializer(data=request.data)
 
         auth = authenticate(request)
@@ -144,14 +173,14 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     p_file = serializer.save(
                         project_configuration_id=project_configuration_id)
 
-                    task = train_regression_model.delay(request.data, project_configuration_id)
+                    task = train_regression_model.delay(request.data, project_configuration_id, temporary_uuid)
 
                     project_configuration.training_task_id = task.id
                     project_configuration.training_task_status = task.state
                     project_configuration.last_time_trained = timezone.now()
                     project_configuration.save(force_update=True)
-
-                    result_dict = ProjectFilesSerializer(p_file).data
+                    #
+                    # result_dict = ProjectFilesSerializer(p_file).data
                 except ValueError:
                     print(ValueError)
 

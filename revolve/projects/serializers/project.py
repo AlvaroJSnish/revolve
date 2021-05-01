@@ -14,7 +14,7 @@ class ProjectFilesSerializer(ModelSerializer):
     all_columns = ArrayField(serializers.CharField())
     saved_columns = ArrayField(serializers.CharField())
     deleted_columns = ArrayField(serializers.CharField(), blank=True)
-    final_data = ArrayField(ArrayField(serializers.CharField()))
+    final_data = ArrayField(ArrayField(serializers.CharField(), blank=True), blank=True)
     label = serializers.CharField()
 
     class Meta:

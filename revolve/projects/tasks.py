@@ -12,17 +12,18 @@ from stats.models import Stat
 
 
 @shared_task(name="Basic Regression Model Training")
-def train_regression_model(request, project_configuration_id):
+def train_regression_model(request, project_configuration_id, temporary_uuid):
     try:
         os.makedirs('uploads/' + request['file_url'])
         p_path = 'uploads/' + request['file_url']
 
-        data = request['final_data']
         label = request['label']
         all_columns = np.array(request['all_columns'])
         deleted_columns = np.array(request['deleted_columns'])
 
-        dataframe = Dataframe(data, all_columns, deleted_columns, label, p_path)
+        csv_path = 'temporary_csv/' + temporary_uuid + '.csv'
+
+        dataframe = Dataframe(csv_path, all_columns, deleted_columns, label, p_path)
         df_features, df_labels = dataframe.get_transformed_data()
 
         timer = Timer()

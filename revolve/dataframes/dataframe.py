@@ -11,14 +11,15 @@ class Dataframe:
     deleted_columns = np.array([])
 
     path = ""
+    csv_path = ""
     dataframe = None
     dataframe_features = None
     dataframe_labels = None
     transformed_dataframe_features = None
     transformed_dataframe_labels = None
 
-    def __init__(self, data, all_columns, deleted_columns, label, path):
-        self.data = data
+    def __init__(self, csv_path, all_columns, deleted_columns, label, path):
+        self.csv_path = csv_path
         self.all_columns = all_columns
         self.deleted_columns = deleted_columns
         self.label = label
@@ -27,8 +28,7 @@ class Dataframe:
         self.build_data()
 
     def build_data(self):
-        dataframe = pd.DataFrame(
-            data=self.data, columns=self.all_columns, index=None)
+        dataframe = pd.read_csv(self.csv_path)
 
         for column in self.all_columns:
             if np.isin(column, self.deleted_columns):
