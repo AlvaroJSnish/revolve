@@ -162,3 +162,5 @@ CELERY_TASK_TRACK_STARTED = True
 # simplemente modificar el primer número, ahora 3 = 3 horas
 CELERY_TASK_TIME_LIMIT = 3 * 3600
 CELERY_RESULT_BACKEND = 'django-db'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
