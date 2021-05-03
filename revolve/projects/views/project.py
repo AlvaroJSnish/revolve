@@ -3,7 +3,8 @@ import io
 import shutil
 from uuid import uuid4
 
-import pandas as pd
+# import pandas as pd
+import modin.pandas as pd
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.utils import timezone

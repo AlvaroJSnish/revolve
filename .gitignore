@@ -144,3 +144,5 @@ uploads
 files
 .idea
 *.csv
+*/**/*.lock
+*/**/*.dirlock
