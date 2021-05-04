@@ -1,18 +1,25 @@
+import json
 import os
 
 import numpy as np
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.utils import timezone
 
 from celery import shared_task
+from common.serializers import UUIDEncoder
 from common.timer import Timer
 from dataframes import Dataframe
 from nn_models import BasicLinearModel
 from projects.models import ProjectConfiguration
+from projects.serializers import ProjectSerializer
 from stats.models import Stat
+
+channel_layer = get_channel_layer()
 
 
 @shared_task(name="Basic Regression Model Training")
-def train_regression_model(request, project_configuration_id, temporary_uuid):
+def train_regression_model(request, project_configuration_id, temporary_uuid, token):
     try:
         os.makedirs('uploads/' + request['file_url'])
         p_path = 'uploads/' + request['file_url']
@@ -43,6 +50,15 @@ def train_regression_model(request, project_configuration_id, temporary_uuid):
         project_configuration.error = error
         project_configuration.training_task_status = 'SUCCESS'
         project_configuration.save(force_update=True)
+
+        # pass info to websocket
+        async_to_sync(channel_layer.group_send)(
+            token,
+            {
+                'type': 'updated_project',
+                'message': json.dumps(ProjectSerializer(project_configuration.project).data, cls=UUIDEncoder)
+            }
+        )
 
         # create stats
         Stat.objects.create(project_type=project_configuration.project_type, project_plan='BASIC',

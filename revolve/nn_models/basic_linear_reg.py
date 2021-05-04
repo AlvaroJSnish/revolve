@@ -19,8 +19,8 @@ class BasicLinearModel:
 
     test_size = 0.2
 
-    folds = 10
-    param_comb = 5
+    folds = 2
+    param_comb = 10
     random_state = 1001
     n_estimators = 1000
     n_thread = 1

@@ -1,3 +1,6 @@
+import json
+from uuid import UUID
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -28,3 +31,11 @@ class MassivePaginationSerializer(PageNumberPagination):
             'results': data,
             'total_pages': self.page.paginator.num_pages
         })
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)

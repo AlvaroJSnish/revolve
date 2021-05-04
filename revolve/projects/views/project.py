@@ -1,6 +1,7 @@
 import csv
 import io
 import shutil
+from re import sub
 from uuid import uuid4
 
 # import pandas as pd
@@ -171,17 +172,15 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     project_configuration_id = self.kwargs['configuration_id']
                     project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
 
-                    p_file = serializer.save(
-                        project_configuration_id=project_configuration_id)
+                    token = sub('Token ', '', self.request.META.get(
+                        'HTTP_AUTHORIZATION', None))
 
-                    task = train_regression_model.delay(request.data, project_configuration_id, temporary_uuid)
+                    task = train_regression_model.delay(request.data, project_configuration_id, temporary_uuid, token)
 
                     project_configuration.training_task_id = task.id
                     project_configuration.training_task_status = task.state
                     project_configuration.last_time_trained = timezone.now()
                     project_configuration.save(force_update=True)
-                    #
-                    # result_dict = ProjectFilesSerializer(p_file).data
                 except ValueError:
                     print(ValueError)
 
