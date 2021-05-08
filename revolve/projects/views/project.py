@@ -18,6 +18,7 @@ from common.serializers import GenericPaginationSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
 from projects.tasks import train_regression_model
+from userstats.models import ProjectVisits
 
 UPLOAD_DIR = '../../uploads/'
 
@@ -49,6 +50,10 @@ class ProjectsViewSet(ListCreateAPIView):
                 result_dict["reasons"] = serializer.errors
             else:
                 project = serializer.save()
+
+                # initialize project visits
+                ProjectVisits.objects.create(project=project)
+
                 result_dict = ProjectSerializer(project).data
         else:
             result_status = status.HTTP_401_UNAUTHORIZED

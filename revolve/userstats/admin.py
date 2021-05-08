@@ -1,3 +1,16 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import UserStats, ProjectVisits
+
+
+@admin.register(UserStats)
+class UserStatsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'regression_models_trained', 'classification_models_trained', 'average_accuracy',
+                    'average_accuracy', 'last_week_average_accuracy', 'last_week_average_error')
+    readonly_fields = ('id', 'user',)
+
+
+@admin.register(ProjectVisits)
+class ProjectVisitsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'project', 'visits')
+    readonly_fields = ('id', 'project',)

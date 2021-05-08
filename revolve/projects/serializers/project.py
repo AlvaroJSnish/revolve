@@ -1,4 +1,3 @@
-# import pandas as pd
 import pandas as pd
 from django.contrib.postgres.fields import ArrayField
 from rest_framework import serializers

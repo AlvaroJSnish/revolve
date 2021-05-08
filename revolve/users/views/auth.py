@@ -9,6 +9,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from users.serializers import UserCreateSerializer
+from userstats.models import UserStats
 
 
 class SignInView(GenericAPIView):
@@ -66,6 +67,10 @@ class SignUpView(CreateAPIView):
             login(request, user)
             result_status = status.HTTP_200_OK
             Token.objects.get_or_create(user=user)
+
+            # user stats
+            UserStats.objects.create(user=user)
+
             result_dict['user'] = {
                 "id": user.id,
                 "email": user.email,

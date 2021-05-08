@@ -17,11 +17,13 @@ class UserStats(BaseModel):
     classification_models_trained = models.IntegerField(default=0, editable=True)
     average_accuracy = models.FloatField(blank=True, null=True)
     average_error = models.FloatField(blank=True, null=True)
+    last_week_average_accuracy = models.FloatField(blank=True, null=True)
+    last_week_average_error = models.FloatField(blank=True, null=True)
 
 
 class ProjectVisits(BaseModel):
     name = 'ProjectVisits'
-    
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='project_visits')
     visits = models.IntegerField(default=0, editable=True)
