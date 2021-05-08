@@ -15,6 +15,7 @@ class Project(BaseModel):
     project_name = models.CharField(max_length=100, default="Mi proyecto")
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_project')
+    finished = models.BooleanField(default=False)
 
 
 class ProjectConfiguration(BaseModel):

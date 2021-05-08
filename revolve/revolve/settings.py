@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'users',
     'projects',
     'stats',
+    'userstats',
 
     # other frameworks
     'rest_framework',
