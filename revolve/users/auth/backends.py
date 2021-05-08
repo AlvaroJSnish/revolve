@@ -1,6 +1,9 @@
 from re import sub
-from rest_framework.authtoken.models import Token
+
 from django.contrib.auth.backends import BaseBackend
+from rest_framework.authtoken.models import Token
+
+from users.models import User
 
 
 class TokenBackend(BaseBackend):
