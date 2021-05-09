@@ -33,6 +33,8 @@ class SignInView(GenericAPIView):
             result_dict['user'] = {
                 "id": user.id,
                 "email": user.email,
+                "avatar": user.avatar,
+                "username": user.username
             }
             result_dict['access_token'] = user.auth_token.key
         else:
@@ -74,6 +76,8 @@ class SignUpView(CreateAPIView):
             result_dict['user'] = {
                 "id": user.id,
                 "email": user.email,
+                "avatar": user.avatar,
+                "username": user.username
             }
             result_dict['access_token'] = user.auth_token.key
 
