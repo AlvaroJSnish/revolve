@@ -4,7 +4,6 @@ import shutil
 from re import sub
 from uuid import uuid4
 
-# import pandas as pd
 import pandas as pd
 from django.contrib.auth import authenticate
 from django.db.models import Q
@@ -68,14 +67,10 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
 
     def get_object(self, queryset=None):
         project = Project.objects.get(id=self.kwargs['project_id'])
-        try:
-            project_configuration = ProjectConfiguration.objects.get(project_id=project.id)
-            task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
-            project_configuration.training_task_status = task_state
-            project_configuration.last_time_trained = timezone.now()
-            project_configuration.save(force_update=True)
-        except:
-            pass
+
+        project_visits = ProjectVisits.objects.get(project=project)
+        project_visits.visits = project_visits + 1
+        project_visits.save(force_update=True)
 
         return project
 
@@ -114,10 +109,6 @@ class ProjectConfigurationViewSet(RetrieveUpdateDestroyAPIView):
     def get_object(self, queryset=None):
         project_configuration = ProjectConfiguration.objects.get(
             project_id=self.kwargs['project_id'], id=self.kwargs['configuration_id'])
-        task_state = train_regression_model.AsyncResult(project_configuration.training_task_id).state
-        project_configuration.training_task_status = task_state
-        project_configuration.last_time_trained = timezone.now()
-        project_configuration.save(force_update=True)
         return project_configuration
 
 
