@@ -2,13 +2,14 @@ from django.contrib import admin
 
 from .models import Project, ProjectConfiguration, ProjectConfigFile
 
+
 # Register your models here.
 
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project_name', 'owner', 'project_configuration')
-    readonly_fields = ('id', 'owner',)
+    list_display = ('id', 'owner')
+    readonly_fields = ('id',)
 
 
 @admin.register(ProjectConfiguration)
