@@ -36,6 +36,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    username = models.CharField(max_length=100, null=True, blank=True)
+    avatar = models.TextField(default="https://www.uic.mx/posgrados/files/2018/05/default-user.png")
+
     objects = UserManager()
 
     class Meta:
