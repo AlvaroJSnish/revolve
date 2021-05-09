@@ -9,11 +9,13 @@ from django.utils import timezone
 from celery import shared_task
 from common.serializers import UUIDEncoder
 from common.timer import Timer
+from common.token import sync_user_by_token
 from dataframes import Dataframe
 from nn_models import BasicLinearModel
 from projects.models import ProjectConfiguration
 from projects.serializers import ProjectSerializer
 from stats.models import Stat
+from userstats.models import UserStats
 
 channel_layer = get_channel_layer()
 
@@ -64,6 +66,14 @@ def train_regression_model(request, project_configuration_id, temporary_uuid, to
         Stat.objects.create(project_type=project_configuration.project_type, project_plan='BASIC',
                             features_columns=len(df_features), elapsed_time=elapsed_time,
                             trained_date=timezone.now())
+        user = sync_user_by_token(token)
+        user_stats = UserStats.objects.get(user=user)
+        user_stats.regression_models_trained = user_stats.regression_models_trained + 1
+        user_stats.average_accuracy = (user_stats.average_accuracy + accuracy) / (
+                user_stats.regression_models_trained + user_stats.classification_models_trained)
+        user_stats.average_error = (user_stats.average_error + error) / (
+                user_stats.regression_models_trained + user_stats.classification_models_trained)
+        user_stats.save(force_update=True)
 
     except ValueError:
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)

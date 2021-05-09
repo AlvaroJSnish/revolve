@@ -6,7 +6,7 @@ from .models import UserStats, ProjectVisits
 @admin.register(UserStats)
 class UserStatsAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'regression_models_trained', 'classification_models_trained', 'average_accuracy',
-                    'average_accuracy', 'last_week_average_accuracy', 'last_week_average_error')
+                    'average_accuracy')
     readonly_fields = ('id', 'user',)
 
 
