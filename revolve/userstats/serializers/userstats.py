@@ -7,13 +7,12 @@ from userstats.models import UserStats, ProjectVisits
 
 
 class UserStatSerializer(ModelSerializer):
-    user = UsersSerializer(
-        read_only=False, many=True, required=False)
+    user = UsersSerializer(read_only=True)
 
     class Meta:
         model = UserStats
         fields = ('id', 'user', 'regression_models_trained', 'classification_models_trained', 'average_accuracy',
-                  'average_accuracy', 'last_week_average_accuracy', 'last_week_average_error')
+                  'average_error', 'last_week_average_accuracy', 'last_week_average_error')
 
 
 class ProjectVisitsSerializer(ModelSerializer):

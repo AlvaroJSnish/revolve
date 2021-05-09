@@ -15,10 +15,10 @@ class UserStats(BaseModel):
         User, on_delete=models.CASCADE, related_name='user_stats')
     regression_models_trained = models.IntegerField(default=0, editable=True)
     classification_models_trained = models.IntegerField(default=0, editable=True)
-    average_accuracy = models.FloatField(blank=True, null=True)
-    average_error = models.FloatField(blank=True, null=True)
-    last_week_average_accuracy = models.FloatField(blank=True, null=True)
-    last_week_average_error = models.FloatField(blank=True, null=True)
+    average_accuracy = models.FloatField(default=0.0)
+    average_error = models.FloatField(default=0.0)
+    last_week_average_accuracy = models.FloatField(default=0.0)
+    last_week_average_error = models.FloatField(default=0.0)
 
 
 class ProjectVisits(BaseModel):
