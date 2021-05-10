@@ -77,7 +77,7 @@ class ProjectSerializer(ModelSerializer):
     project_name = serializers.CharField(max_length=200)
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
-        read_only=False, many=True, required=False)
+        read_only=False, many=False, required=False)
 
     class Meta:
         model = Project

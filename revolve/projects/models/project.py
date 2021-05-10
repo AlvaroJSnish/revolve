@@ -35,7 +35,7 @@ class ProjectConfiguration(BaseModel):
         FAILURE = 'Fallida', _('Fallida')
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    project = models.ForeignKey(
+    project = models.OneToOneField(
         Project, on_delete=models.CASCADE, related_name='project_configuration')
     project_type = models.CharField(
         max_length=40,
