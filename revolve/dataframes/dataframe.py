@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from common.utils import transform_values, transform_label
+from projects.models import ProjectConfigFile
 
 
 class Dataframe:
@@ -19,17 +20,23 @@ class Dataframe:
     transformed_dataframe_features = None
     transformed_dataframe_labels = None
 
-    def __init__(self, csv_path, all_columns, deleted_columns, label, path):
+    def __init__(self, csv_path, all_columns, deleted_columns, label, path, project_configuration_id):
         self.csv_path = csv_path
         self.all_columns = all_columns
+        self.saved_columns = all_columns
         self.deleted_columns = deleted_columns
         self.label = label
         self.path = path
+        self.project_configuration_id = project_configuration_id
 
         self.build_data()
 
     def build_data(self):
         dataframe = pd.read_csv(self.csv_path)
+
+        for column in self.saved_columns:
+            if np.isin(column, self.deleted_columns):
+                self.saved_columns.remove(column)
 
         for column in self.all_columns:
             if np.isin(column, self.deleted_columns):
@@ -43,6 +50,16 @@ class Dataframe:
         self.dataframe_labels = dataframe[self.label].copy()
         self.transformed_dataframe_features = transform_values(self.dataframe_features)
         self.transformed_dataframe_labels = transform_label(self.dataframe_labels)
+
+        # create config file
+        ProjectConfigFile.objects.create(
+            project_configuration_id=self.project_configuration_id,
+            file_url=self.path,
+            all_columns=self.all_columns.tolist(),
+            saved_columns=self.saved_columns.tolist(),
+            deleted_columns=self.deleted_columns.tolist(),
+            label=self.label
+        )
 
     def get_transformed_data(self):
         return self.transformed_dataframe_features, self.transformed_dataframe_labels
