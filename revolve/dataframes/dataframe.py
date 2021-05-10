@@ -58,7 +58,9 @@ class Dataframe:
             all_columns=self.all_columns.tolist(),
             saved_columns=self.saved_columns.tolist(),
             deleted_columns=self.deleted_columns.tolist(),
-            label=self.label
+            label=self.label,
+            final_data=self.dataframe_features.values.tolist(),
+            final_label=self.dataframe_labels.values.tolist()
         )
 
     def get_transformed_data(self):

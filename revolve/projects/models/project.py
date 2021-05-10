@@ -66,6 +66,7 @@ class ProjectConfigFile(BaseModel):
     final_data = ArrayField(ArrayField(
         models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True), blank=True,
         null=True)
+    final_label = ArrayField(models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True)
     label = models.CharField(max_length=200)
     # transformed_data = ArrayField(ArrayField(
     #     models.CharField(max_length=200, blank=True, null=True, default=""), blank=True, null=True), blank=True,

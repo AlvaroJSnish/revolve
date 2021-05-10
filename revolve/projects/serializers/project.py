@@ -20,7 +20,7 @@ class ProjectFilesSerializer(ModelSerializer):
     class Meta:
         model = ProjectConfigFile
         fields = ('id', 'project_configuration', 'file_url',
-                  'all_columns', 'saved_columns', 'deleted_columns', 'label', 'final_data')
+                  'all_columns', 'saved_columns', 'deleted_columns', 'label', 'final_data', 'final_label')
 
 
 class ProjectConfigurationSerializer(ModelSerializer):
