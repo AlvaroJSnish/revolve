@@ -69,7 +69,7 @@ class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
         project = Project.objects.get(id=self.kwargs['project_id'])
 
         project_visits = ProjectVisits.objects.get(project=project)
-        project_visits.visits = project_visits + 1
+        project_visits.visits = project_visits.visits + 1
         project_visits.save(force_update=True)
 
         return project
