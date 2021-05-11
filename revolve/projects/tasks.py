@@ -1,6 +1,7 @@
 import json
 import os
 
+import joblib
 import numpy as np
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -82,3 +83,12 @@ def train_regression_model(request, project_configuration_id, temporary_uuid, to
         project_configuration.last_time_trained = timezone.now()
         project_configuration.training_task_status = 'REVOKED'
         project_configuration.save(force_update=True)
+
+
+@shared_task(name="Model prediction")
+def model_prediction(model_path, data_to_predict):
+    try:
+        model = joblib.load(model_path + '/model.joblib')
+        model.predict()
+    except:
+        pass

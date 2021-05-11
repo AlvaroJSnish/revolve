@@ -4,6 +4,8 @@ import shutil
 from re import sub
 from uuid import uuid4
 
+import joblib
+import numpy as np
 import pandas as pd
 from django.contrib.auth import authenticate
 from django.db.models import Q
@@ -195,3 +197,20 @@ class ProjectConfigurationFilesViewSet(RetrieveUpdateDestroyAPIView):
             id=self.kwargs['configuration_file_id'], configuration_file_id=self.kwargs['configuration_id'])
 
         return configuration_file
+
+
+class ProjectModelAPI(CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        project_id = self.kwargs['project_id']
+        project_config = ProjectConfiguration.objects.get(project_id=project_id)
+        project_config_file = ProjectConfigFile.objects.get(project_configuration=project_config)
+        model_url = project_config_file.file_url
+
+        model = joblib.load(model_url + '/model.joblib')
+        values = request.data['values']
+        np_values = np.array(list(values.values()))
+        converted_values = np.array([[round(float(item)) for item in np_values]])
+
+        prediction = model.predict(converted_values)
+
+        return Response({"prediction": prediction[0]}, status=200)
