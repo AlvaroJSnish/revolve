@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import joblib
 import numpy as np
@@ -32,15 +33,22 @@ def train_regression_model(request, project_configuration_id, temporary_uuid, to
         deleted_columns = np.array(request['deleted_columns'])
 
         csv_path = 'temporary_csv/' + temporary_uuid + '.csv'
+        print(f'Created path for temporary CSV in {csv_path}')
 
         dataframe = Dataframe(csv_path, all_columns, deleted_columns, label, p_path, project_configuration_id)
+        print('Created Dataframe')
         df_features, df_labels = dataframe.get_transformed_data()
+        print('Got transformed data')
 
+        print('Started timer')
         timer = Timer()
         timer.start()
 
+        print('Creating model')
         model = BasicLinearModel(df_features, df_labels, p_path)
+        print('Training model')
         model.train_and_save()
+        print('Getting metrics')
         error, accuracy = model.get_metrics()
 
         elapsed_time = timer.stop()
@@ -78,7 +86,7 @@ def train_regression_model(request, project_configuration_id, temporary_uuid, to
 
     except ValueError:
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
-        os.removedirs('uploads/' + request['file_url'])
+        shutil.rmtree('uploads/' + request['file_url'])
         project_configuration.trained = False
         project_configuration.last_time_trained = timezone.now()
         project_configuration.training_task_status = 'REVOKED'

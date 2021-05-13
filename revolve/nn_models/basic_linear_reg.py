@@ -2,7 +2,7 @@ import joblib
 import numpy as np
 import xgboost
 from sklearn.metrics import mean_squared_error, accuracy_score
-from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, RepeatedKFold
 
 
 class BasicLinearModel:
@@ -20,7 +20,7 @@ class BasicLinearModel:
     test_size = 0.2
 
     folds = 2
-    param_comb = 10
+    param_comb = 5
     random_state = 1001
     n_estimators = 1000
     n_thread = 1
@@ -60,23 +60,36 @@ class BasicLinearModel:
         self.y_test = y_test
 
     def train_and_save(self):
-        skf = StratifiedKFold(
-            n_splits=self.folds, shuffle=True, random_state=self.random_state)
+        print('-- Creating strategy')
+        skf = RepeatedKFold(
+            n_splits=self.folds, random_state=self.random_state)
 
+        print('-- Creating regressor')
         xgb = xgboost.XGBRegressor(n_estimators=self.n_estimators, nthread=self.n_thread)
         self.model = RandomizedSearchCV(xgb, param_distributions=self.param_distributions, n_iter=self.param_comb,
                                         n_jobs=self.n_jobs,
-                                        cv=skf.split(
-                                            self.X_train, self.y_train), verbose=3, random_state=self.random_state)
+                                        cv=skf,
+                                        verbose=10, random_state=self.random_state)
 
-        self.model.fit(self.X_train, self.y_train)
+        try:
+            print('-- Fitting regressor')
+            self.model.fit(self.X_train, self.y_train)
 
-        joblib.dump(self.model.best_estimator_, self.path + '/model.joblib')
+            print('-- Saving regressor')
+            joblib.dump(self.model.best_estimator_, self.path + '/model.joblib')
+        except ValueError as e:
+            print('Oops, something went wrong fitting the model: ', e)
 
     def get_metrics(self):
-        y_pred = self.model.predict(self.X_test)
-        self.error = mean_squared_error(self.y_test, y_pred)
-        predictions = [round(value) for value in y_pred]
-        self.accuracy = accuracy_score(self.y_test, predictions)
+        try:
+            y_pred = self.model.predict(self.X_test)
+            self.error = mean_squared_error(self.y_test, y_pred)
+            predictions = [round(value) for value in y_pred]
+            self.accuracy = accuracy_score(self.y_test, predictions)
 
-        return self.error, self.accuracy
+            print("Accuracy: ", self.accuracy)
+            print("Error: ", self.error)
+
+            return self.error, self.accuracy
+        except ValueError as e:
+            print('Something went wrong getting metrics', e)

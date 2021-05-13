@@ -20,14 +20,17 @@ def transform_values(dataframe):
     numerical_columns = dataframe.select_dtypes(np.number).columns
     categorical_columns = dataframe.select_dtypes(exclude=[np.number]).columns
 
-    tmp_cat_df = dataframe.copy()
-    tmp_num_df = dataframe.copy()
+    print("Numerical columns: ", numerical_columns)
+    print("Categorical columns: ", categorical_columns)
 
-    for column in numerical_columns:
-        tmp_cat_df.drop(column, inplace=True, axis=1)
-
-    for column in categorical_columns:
-        tmp_num_df.drop(column, inplace=True, axis=1)
+    # tmp_cat_df = dataframe.copy()
+    # tmp_num_df = dataframe.copy()
+    #
+    # for column in numerical_columns:
+    #     tmp_cat_df.drop(column, inplace=True, axis=1)
+    #
+    # for column in categorical_columns:
+    #     tmp_num_df.drop(column, inplace=True, axis=1)
 
     num_pipeline = numerical_transformer()
     cat_pipeline = categorical_transformer()
@@ -36,6 +39,8 @@ def transform_values(dataframe):
         ('num', num_pipeline, list(numerical_columns)),
         ('cat', cat_pipeline, list(categorical_columns))
     ])
+    print('Numerical fields transformed successfully')
+    print('Categorical fields transformed successfully')
 
     transformed_dataframe = full_pipeline.fit_transform(dataframe)
 

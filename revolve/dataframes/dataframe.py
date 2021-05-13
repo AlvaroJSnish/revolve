@@ -36,7 +36,9 @@ class Dataframe:
 
         for column in self.saved_columns:
             if np.isin(column, self.deleted_columns):
-                self.saved_columns.remove(column)
+                index = np.where(self.saved_columns == column)
+                self.saved_columns = np.delete(self.saved_columns, index)
+                # self.saved_columns.delete(column)
 
         for column in self.all_columns:
             if np.isin(column, self.deleted_columns):
@@ -49,7 +51,9 @@ class Dataframe:
         self.dataframe_features = dataframe.drop(self.label, axis=1)
         self.dataframe_labels = dataframe[self.label].copy()
         self.transformed_dataframe_features = transform_values(self.dataframe_features)
+        print("Features transformed successfully")
         self.transformed_dataframe_labels = transform_label(self.dataframe_labels)
+        print("Label transformed successfully")
 
         # create config file
         ProjectConfigFile.objects.create(
