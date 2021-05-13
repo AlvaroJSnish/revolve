@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'projects',
     'stats',
     'userstats',
+    'databases',
 
     # other frameworks
     'rest_framework',
