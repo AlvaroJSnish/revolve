@@ -5,6 +5,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIV
 from rest_framework.response import Response
 
 from common.serializers import GenericPaginationSerializer
+from databases.classes import DatabaseConnector
 from databases.models import Database
 from databases.serializers import DatabaseSerializer
 
@@ -58,12 +59,35 @@ class DatabaseViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class DatabaseConnectAPI(CreateAPIView):
+class DatabaseConnect(CreateAPIView):
     def post(self, request, *args, **kwargs):
         result_status = status.HTTP_201_CREATED
         result_dict = {}
-        serializer = self.get_serializer(data=request.data)
 
         auth = authenticate(request)
-        
-        pass
+
+        if auth:
+            database_name = request.data['database_name']
+            database_host = request.data['database_host']
+            database_port = request.data['database_port']
+            database_password = request.data['database_password']
+            database_type = request.data['database_type']
+            database_user = request.data['database_user']
+
+            database = DatabaseConnector(database_host=database_host, database_port=database_port,
+                                         database_password=database_password, database_type=database_type,
+                                         database_user=database_user, database_name=database_name)
+            cursor = database.connect()
+
+            if cursor is None:
+                result_dict["reasons"] = 'Error: check credentials'
+                result_status = status.HTTP_400_BAD_REQUEST
+                return Response(result_dict, status=result_status)
+            else:
+                database.get_tables(cursor)
+
+        else:
+            result_status = status.HTTP_401_UNAUTHORIZED
+            result_status["reasons"] = 'Not authorized'
+
+        return Response(result_dict, status=result_status)

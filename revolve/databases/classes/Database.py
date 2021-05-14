@@ -1,7 +1,7 @@
 import psycopg2 as pg
 
 
-class Database:
+class DatabaseConnector:
     database_host = ''
     database_port = ''
     database_user = ''
@@ -9,6 +9,8 @@ class Database:
     database_type = ''
     database_name = ''
     connection = None
+
+    cursor = None
 
     def __init__(self, database_host, database_port, database_password, database_type, database_user, database_name):
         self.database_host = database_host
@@ -31,10 +33,16 @@ class Database:
 
                 cursor = self.connection.cursor()
 
-                print(cursor)
-
-                cursor.close()
+                return cursor
             else:
                 pass
-        except ValueError:
-            pass
+        except:
+            # print("Error connecting to database: ", e)
+            return None
+
+    def get_tables(self, cursor):
+        self.cursor = cursor
+        cursor.execute("""SELECT table_name FROM information_schema.tables
+               WHERE table_schema = 'public'""")
+        for table in cursor.fetchall():
+            print(table)
