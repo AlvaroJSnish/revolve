@@ -11,7 +11,7 @@ class Database(BaseModel):
     name = 'Database'
 
     class Types(models.TextChoices):
-        POSTGRES = 'postgres'
+        POSTGRES = 'postgresql'
         MYSQL = 'mysql'
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)

@@ -22,7 +22,7 @@ class DatabaseConnector:
 
     def connect(self):
         try:
-            if self.database_type == 'postgres':
+            if self.database_type == 'postgresql':
                 self.connection = pg.connect(
                     host=self.database_host,
                     database=self.database_name,
@@ -32,6 +32,7 @@ class DatabaseConnector:
                 )
 
                 cursor = self.connection.cursor()
+                self.cursor = cursor
 
                 return cursor
             else:
@@ -39,6 +40,9 @@ class DatabaseConnector:
         except:
             # print("Error connecting to database: ", e)
             return None
+
+    def disconnect(self):
+        self.cursor.close()
 
     def get_tables(self, cursor):
         self.cursor = cursor
