@@ -56,7 +56,7 @@ class ProjectConfigFile(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     project_configuration = models.OneToOneField(
         ProjectConfiguration, on_delete=models.CASCADE, related_name='configuration_file')
-    file_url = models.TextField()
+    file_url = models.TextField(blank=True, null=True)
     all_columns = ArrayField(
         models.CharField(max_length=200, blank=True), blank=True)
     saved_columns = ArrayField(

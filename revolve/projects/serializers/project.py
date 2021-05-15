@@ -10,7 +10,7 @@ from users.serializers import UsersSerializer
 class ProjectFilesSerializer(ModelSerializer):
     project_configuration = PrimaryKeyRelatedField(
         read_only=True, many=False)
-    file_url = serializers.CharField()
+    file_url = serializers.CharField(required=False)
     all_columns = ArrayField(serializers.CharField())
     saved_columns = ArrayField(serializers.CharField())
     deleted_columns = ArrayField(serializers.CharField(), blank=True)

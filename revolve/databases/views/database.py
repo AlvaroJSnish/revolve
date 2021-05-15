@@ -1,17 +1,17 @@
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView, ListAPIView
 from rest_framework.response import Response
 
 from common.serializers import GenericPaginationSerializer
 from databases.classes import DatabaseConnector
 from databases.models import Database
-from databases.serializers import DatabaseSerializer
+from databases.serializers import DatabaseSerializer, DatabasesSerializer
 
 
 class DatabasesViewSet(ListCreateAPIView):
-    serializer_class = DatabaseSerializer
+    serializer_class = DatabasesSerializer
     pagination_class = GenericPaginationSerializer
 
     def get_queryset(self):
@@ -50,8 +50,8 @@ class DatabaseViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
     pagination_class = GenericPaginationSerializer
 
     def get_object(self, queryset=None):
-        project = Database.objects.get(id=self.kwargs['project_id'])
-        return project
+        database = Database.objects.get(id=self.kwargs['database_id'])
+        return database
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -74,7 +74,7 @@ class CheckDbConnection(CreateAPIView):
             if cursor is not None:
                 result_dict['message'] = 'databases.connectedSuccessfully'
                 result_dict['status'] = 1
-                cursor.disconnect()
+                database.disconnect()
 
             else:
                 result_status = status.HTTP_400_BAD_REQUEST
@@ -88,26 +88,70 @@ class CheckDbConnection(CreateAPIView):
         return Response(result_dict, status=result_status)
 
 
-class DatabaseConnect(CreateAPIView):
-    def post(self, request, *args, **kwargs):
+class DatabaseTables(ListAPIView):
+    def get(self, request, *args, **kwargs):
         result_status = status.HTTP_201_CREATED
         result_dict = {}
 
         auth = authenticate(request)
 
         if auth:
-            pass
-            # db_values = get_database_values(request.data)
-            # database = create_database(db_values)
-            # cursor = database.connect()
-            #
-            # if cursor is None:
-            #     result_dict["reasons"] = 'Error: check credentials'
-            #     result_status = status.HTTP_400_BAD_REQUEST
-            #     return Response(result_dict, status=result_status)
-            # else:
-            #     tables = database.get_tables(cursor)
-            #     result_dict['tables'] = tables
+            database = Database.objects.get(id=self.kwargs['database_id'])
+            connection = DatabaseConnector(
+                database_host=database.database_host,
+                database_type=database.database_type,
+                database_name=database.database_name,
+                database_user=database.database_user,
+                database_port=database.database_port,
+                database_password=database.database_password
+            )
+            cursor = connection.connect()
+
+            if cursor is None:
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = 'databases.connectedError'
+
+                return Response(result_dict, status=result_status)
+            else:
+                tables = connection.get_tables()
+                result_dict['tables'] = tables
+                connection.disconnect()
+
+        else:
+            result_status = status.HTTP_401_UNAUTHORIZED
+            result_status["reasons"] = 'Not authorized'
+
+        return Response(result_dict, status=result_status)
+
+
+class DatabaseGetTable(ListAPIView):
+    def get(self, request, *args, **kwargs):
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
+
+        auth = authenticate(request)
+
+        if auth:
+            database = Database.objects.get(id=self.kwargs['database_id'])
+            connection = DatabaseConnector(
+                database_host=database.database_host,
+                database_type=database.database_type,
+                database_name=database.database_name,
+                database_user=database.database_user,
+                database_port=database.database_port,
+                database_password=database.database_password
+            )
+            cursor = connection.connect()
+
+            if cursor is None:
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = 'databases.connectedError'
+
+                return Response(result_dict, status=result_status)
+            else:
+                rows = connection.get_table(table_name=self.kwargs['table_name'], with_headers=True)
+                result_dict['rows'] = rows
+                connection.disconnect()
 
         else:
             result_status = status.HTTP_401_UNAUTHORIZED

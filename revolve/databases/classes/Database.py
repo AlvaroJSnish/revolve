@@ -31,10 +31,9 @@ class DatabaseConnector:
                     port=self.database_port
                 )
 
-                cursor = self.connection.cursor()
-                self.cursor = cursor
+                self.cursor = self.connection.cursor()
 
-                return cursor
+                return self.cursor
             else:
                 pass
         except:
@@ -44,9 +43,37 @@ class DatabaseConnector:
     def disconnect(self):
         self.cursor.close()
 
-    def get_tables(self, cursor):
-        self.cursor = cursor
-        cursor.execute("""SELECT table_name FROM information_schema.tables
+    def get_tables(self):
+        self.cursor.execute("""SELECT table_name FROM information_schema.tables
                WHERE table_schema = 'public'""")
-        for table in cursor.fetchall():
-            print(table)
+        tables = []
+        for table in self.cursor.fetchall():
+            tables.append(table)
+
+        return tables
+
+    def get_table(self, table_name, with_headers=False):
+        query = "select * from {table_name} limit 20".format(table_name=table_name)
+        self.cursor.execute(query)
+
+        rows = []
+
+        if with_headers:
+            rows.append([desc[0] for desc in self.cursor.description])
+
+        for row in self.cursor.fetchall():
+            rows.append(row)
+
+        return rows
+
+    def execute_query(self, query, with_headers=False):
+        result = []
+        self.cursor.execute(query)
+
+        if with_headers:
+            result.append([desc[0] for desc in self.cursor.description])
+
+        for row in self.cursor.fetchall():
+            result.append(row)
+
+        return result

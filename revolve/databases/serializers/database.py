@@ -10,7 +10,20 @@ class DatabaseSerializer(ModelSerializer):
     class Meta:
         model = Database
         fields = (
-            'id', 'owner', 'database_name', 'database_host', 'database_port', 'database_password', 'database_type',
+            'id', 'owner', 'database_name', 'database_type',)
+        read_only_fields = ('id', 'owner',)
+
+    def destroy(self, request, *args, **kwargs):
+        database_id = self.context['view'].kwargs.get('database_id')
+
+
+class DatabasesSerializer(ModelSerializer):
+    owner = UsersSerializer(read_only=True)
+
+    class Meta:
+        model = Database
+        fields = (
+            'id', 'owner', 'database_name', 'database_type', 'database_port', 'database_host', 'database_password',
             'database_user')
         read_only_fields = ('id', 'owner',)
 
@@ -21,6 +34,3 @@ class DatabaseSerializer(ModelSerializer):
             user = request.user
 
         return Database.objects.create(owner=user, **validated_data)
-
-    def destroy(self, request, *args, **kwargs):
-        database_id = self.context['view'].kwargs.get('database_id')
