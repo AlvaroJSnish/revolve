@@ -2,7 +2,7 @@ from celery import shared_task
 from users.models import User
 
 
-@shared_task(name="Disabled trial account")
+@shared_task(name="Disable trial account")
 def disabled_trial_account(user_id):
     user = User.objects.get(id=user_id)
 
