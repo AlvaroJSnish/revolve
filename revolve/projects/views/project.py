@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from common.serializers import GenericPaginationSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
-from projects.tasks import train_regression_model, train_regression_model_database
+from projects.tasks import train_basic_regression_model
 from userstats.models import ProjectVisits
 
 UPLOAD_DIR = '../../uploads/'
@@ -157,6 +157,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
         file_url = request.data['project_id'] + '/' + request.data['project_configuration']
         request.data['file_url'] = file_url
         temporary_uuid = request.data['temporary_uuid']
+        from_database = request.data['from_database']
         serializer = self.get_serializer(data=request.data)
 
         auth = authenticate(request)
@@ -173,7 +174,13 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     token = sub('Token ', '', self.request.META.get(
                         'HTTP_AUTHORIZATION', None))
 
-                    task = train_regression_model.delay(request.data, project_configuration_id, temporary_uuid, token)
+                    task = train_basic_regression_model.delay(
+                        request=request.data,
+                        project_configuration_id=project_configuration_id,
+                        temporary_uuid=temporary_uuid,
+                        token=token,
+                        from_database=from_database,
+                    )
 
                     project_configuration.training_task_id = task.id
                     project_configuration.training_task_status = task.state
@@ -189,46 +196,51 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
         return Response(result_dict, status=result_status)
 
 
-class ProjectFromDatabase(CreateAPIView):
-    serializer_class = ProjectFilesSerializer
-
-    def post(self, request, *args, **kwargs):
-        result_status = status.HTTP_200_OK
-        result_dict = {}
-        file_url = request.data['project_id'] + '/' + request.data['project_configuration']
-        request.data['file_url'] = file_url
-
-        serializer = self.get_serializer(data=request.data)
-
-        auth = authenticate(request)
-
-        if auth:
-            if not serializer.is_valid():
-                result_status = status.HTTP_400_BAD_REQUEST
-                result_dict["reasons"] = serializer.errors
-            else:
-                try:
-                    project_configuration_id = self.kwargs['configuration_id']
-                    project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
-
-                    token = sub('Token ', '', self.request.META.get(
-                        'HTTP_AUTHORIZATION', None))
-
-                    task = train_regression_model_database.delay(request.data, project_configuration_id,
-                                                                 token)
-
-                    project_configuration.training_task_id = task.id
-                    project_configuration.training_task_status = task.state
-                    project_configuration.last_time_trained = timezone.now()
-                    project_configuration.save(force_update=True)
-                except ValueError:
-                    print(ValueError)
-
-        else:
-            result_status = status.HTTP_401_UNAUTHORIZED
-            result_status["reasons"] = 'Not authorized'
-
-        return Response(result_dict, status=result_status)
+# class ProjectFromDatabase(CreateAPIView):
+#     serializer_class = ProjectFilesSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         result_status = status.HTTP_200_OK
+#         result_dict = {}
+#         file_url = request.data['project_id'] + '/' + request.data['project_configuration']
+#         request.data['file_url'] = file_url
+#
+#         serializer = self.get_serializer(data=request.data)
+#
+#         auth = authenticate(request)
+#
+#         if auth:
+#             if not serializer.is_valid():
+#                 result_status = status.HTTP_400_BAD_REQUEST
+#                 result_dict["reasons"] = serializer.errors
+#             else:
+#                 try:
+#                     project_configuration_id = self.kwargs['configuration_id']
+#                     project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
+#
+#                     token = sub('Token ', '', self.request.META.get(
+#                         'HTTP_AUTHORIZATION', None))
+#
+#                     task = train_basic_regression_model.delay(
+#                         request=request.data,
+#                         project_configuration_id=project_configuration_id,
+#                         temporary_uuid=None,
+#                         token=token,
+#                         from_database=True,
+#                     )
+#
+#                     project_configuration.training_task_id = task.id
+#                     project_configuration.training_task_status = task.state
+#                     project_configuration.last_time_trained = timezone.now()
+#                     project_configuration.save(force_update=True)
+#                 except ValueError:
+#                     print(ValueError)
+#
+#         else:
+#             result_status = status.HTTP_401_UNAUTHORIZED
+#             result_status["reasons"] = 'Not authorized'
+#
+#         return Response(result_dict, status=result_status)
 
 
 class ProjectConfigurationFilesViewSet(RetrieveUpdateDestroyAPIView):
