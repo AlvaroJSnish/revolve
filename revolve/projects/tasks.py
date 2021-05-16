@@ -120,9 +120,10 @@ def train_regression_model_database(request, project_configuration_id, token):
 
             if cursor is not None:
                 result = connection.execute_query(f'select * from {table_name}', with_headers=True)
+                connection.disconnect()
 
                 dataframe = DataframeFromDB(
-                    data=result[0:],
+                    data=result[1:],
                     all_columns=all_columns,
                     deleted_columns=deleted_columns,
                     project_configuration_id=project_configuration_id,
@@ -168,58 +169,6 @@ def train_regression_model_database(request, project_configuration_id, token):
                 user_stats.average_error = (user_stats.average_error + error) / (
                         user_stats.regression_models_trained + user_stats.classification_models_trained)
                 user_stats.save(force_update=True)
-
-        # csv_path = 'temporary_csv/' + temporary_uuid + '.csv'
-        # print(f'Created path for temporary CSV in {csv_path}')
-
-        # dataframe = Dataframe(csv_path, all_columns, deleted_columns, label, p_path, project_configuration_id)
-        # print('Created Dataframe')
-        # df_features, df_labels = dataframe.get_transformed_data()
-        # print('Got transformed data')
-        #
-        # print('Started timer')
-        # timer = Timer()
-        # timer.start()
-        #
-        # print('Creating model')
-        # model = BasicLinearModel(df_features, df_labels, p_path)
-        # print('Training model')
-        # model.train_and_save()
-        # print('Getting metrics')
-        # error, accuracy = model.get_metrics()
-        #
-        # elapsed_time = timer.stop()
-        #
-        # # modify project config
-        # project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
-        # project_configuration.trained = True
-        # project_configuration.last_time_trained = timezone.now()
-        # project_configuration.accuracy = accuracy
-        # project_configuration.error = error
-        # project_configuration.training_task_status = 'SUCCESS'
-        # project_configuration.save(force_update=True)
-        #
-        # # pass info to websocket
-        # async_to_sync(channel_layer.group_send)(
-        #     token,
-        #     {
-        #         'type': 'updated_project',
-        #         'message': json.dumps(ProjectSerializer(project_configuration.project).data, cls=UUIDEncoder)
-        #     }
-        # )
-        #
-        # # create stats
-        # Stat.objects.create(project_type=project_configuration.project_type, project_plan='BASIC',
-        #                     features_columns=len(df_features), elapsed_time=elapsed_time,
-        #                     trained_date=timezone.now())
-        # user = sync_user_by_token(token)
-        # user_stats = UserStats.objects.get(user=user)
-        # user_stats.regression_models_trained = user_stats.regression_models_trained + 1
-        # user_stats.average_accuracy = (user_stats.average_accuracy + accuracy) / (
-        #         user_stats.regression_models_trained + user_stats.classification_models_trained)
-        # user_stats.average_error = (user_stats.average_error + error) / (
-        #         user_stats.regression_models_trained + user_stats.classification_models_trained)
-        # user_stats.save(force_update=True)
     except ValueError:
         project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
         shutil.rmtree('uploads/' + request['file_url'])
