@@ -35,7 +35,8 @@ class SignInView(GenericAPIView):
                 "email": user.email,
                 "avatar": user.avatar,
                 "username": user.username,
-                "account_type": user.account_type
+                "account_type": user.account_type,
+                "disabled": user.disabled
             }
             result_dict['access_token'] = user.auth_token.key
         else:

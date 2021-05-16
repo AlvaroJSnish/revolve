@@ -44,6 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=100, null=True, blank=True)
     avatar = models.TextField(default="https://www.uic.mx/posgrados/files/2018/05/default-user.png")
 
+    disabled = models.BooleanField(default=False)
     account_type = models.IntegerField(choices=AccountType.choices, default=AccountType.TRIAL_ACCOUNT)
 
     objects = UserManager()
