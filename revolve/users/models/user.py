@@ -28,6 +28,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
 
+    class AccountType(models.IntegerChoices):
+        TRIAL_ACCOUNT = 0
+        BASIC_ACCOUNT = 1
+        PREMIUM_ACCOUNT = 2
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     email = models.EmailField(
         max_length=90, null=False, blank=False, unique=True)
@@ -38,6 +43,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     username = models.CharField(max_length=100, null=True, blank=True)
     avatar = models.TextField(default="https://www.uic.mx/posgrados/files/2018/05/default-user.png")
+
+    account_type = models.IntegerField(choices=AccountType.choices, default=AccountType.TRIAL_ACCOUNT)
 
     objects = UserManager()
 
