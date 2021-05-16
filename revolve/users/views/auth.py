@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
@@ -9,6 +10,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from users.serializers import UserCreateSerializer
+from users.tasks import disabled_trial_account
 from userstats.models import UserStats
 
 
@@ -39,6 +41,7 @@ class SignInView(GenericAPIView):
                 "disabled": user.disabled
             }
             result_dict['access_token'] = user.auth_token.key
+
         else:
             result_status = status.HTTP_400_BAD_REQUEST
             result_dict["reasons"] = 'Credenciales inválidas'
@@ -79,9 +82,14 @@ class SignUpView(CreateAPIView):
                 "id": user.id,
                 "email": user.email,
                 "avatar": user.avatar,
-                "username": user.username
+                "username": user.username,
+                "account_type": user.account_type,
+                "disabled": user.disabled
             }
             result_dict['access_token'] = user.auth_token.key
+
+            two_weeks = datetime.utcnow() + timedelta(days=14)
+            disabled_trial_account.apply_async(args=[user.id], eta=two_weeks)
 
         return Response(result_dict, status=result_status)
 
