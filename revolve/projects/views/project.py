@@ -15,6 +15,7 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIV
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
+from common.restrictions import check_projects_restrictions
 from common.serializers import GenericPaginationSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
@@ -40,22 +41,29 @@ class ProjectsViewSet(ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         auth = authenticate(request)
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
 
         if auth:
-            result_status = status.HTTP_201_CREATED
-            result_dict = {}
             serializer = self.get_serializer(data=request.data)
 
-            if not serializer.is_valid():
-                result_status = status.HTTP_400_BAD_REQUEST
-                result_dict["reasons"] = serializer.errors
+            available = check_projects_restrictions(auth)
+
+            if available:
+                if not serializer.is_valid():
+                    result_status = status.HTTP_400_BAD_REQUEST
+                    result_dict["reasons"] = serializer.errors
+                else:
+                    project = serializer.save()
+
+                    # initialize project visits
+                    ProjectVisits.objects.create(project=project)
+
+                    result_dict = ProjectSerializer(project).data
             else:
-                project = serializer.save()
-
-                # initialize project visits
-                ProjectVisits.objects.create(project=project)
-
-                result_dict = ProjectSerializer(project).data
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = "User can't create more projects"
+                result_dict["api_error_code"] = 101
         else:
             result_status = status.HTTP_401_UNAUTHORIZED
             result_status["reasons"] = 'Not authorized'
@@ -183,10 +191,10 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         auth = authenticate(request)
+        result_status = status.HTTP_201_CREATED
+        result_dict = {}
 
         if auth:
-            result_status = status.HTTP_201_CREATED
-            result_dict = {}
             file_url = request.data['project_id'] + '/' + request.data['project_configuration']
             request.data['file_url'] = file_url
             temporary_uuid = request.data['temporary_uuid']
