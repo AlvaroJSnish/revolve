@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from userstats.models import UserStats
@@ -8,5 +9,10 @@ class UserStatsViewSet(RetrieveUpdateDestroyAPIView):
     serializer_class = UserStatSerializer
 
     def get_object(self, queryset=None):
-        user_stats = UserStats.objects.get(user=self.kwargs['user_id'])
-        return user_stats
+        auth = authenticate(self.request)
+
+        if auth:
+            user_stats = UserStats.objects.get(user=self.kwargs['user_id'])
+            return user_stats
+        else:
+            return None

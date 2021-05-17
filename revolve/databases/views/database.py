@@ -50,13 +50,23 @@ class DatabaseViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
     pagination_class = GenericPaginationSerializer
 
     def get_object(self, queryset=None):
-        database = Database.objects.get(id=self.kwargs['database_id'])
-        return database
+        user = authenticate(self.request)
+
+        if user:
+            database = Database.objects.get(id=self.kwargs['database_id'])
+            return database
+        else:
+            return None
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        user = authenticate(self.request)
+
+        if user:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return None
 
 
 class CheckDbConnection(CreateAPIView):
