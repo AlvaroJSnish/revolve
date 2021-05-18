@@ -16,7 +16,7 @@ PROJECT_RESTRICTIONS = {
 DATABASE_RESTRICTIONS = {
     "TRIAL_ACCOUNT": 0,
     "BASIC_ACCOUNT": 3,
-    "PREMIUM_ACCOUNT": 1
+    "PREMIUM_ACCOUNT": 'unlimited'
 }
 
 
@@ -30,29 +30,26 @@ def check_projects_restrictions(auth):
     projects_restriction = get_value_by_key(account_type, PROJECT_RESTRICTIONS)
 
     if projects_restriction == 0:
-        return True
+        return True, 'unlimited', account_type
 
-    if projects_restriction < len(projects):
-        return True
+    if projects_restriction > len(projects):
+        return True, projects_restriction - len(projects), account_type
 
-    return False
+    return False, 0, account_type
 
 
 def check_database_restrictions(auth):
     databases = Database.objects.filter(owner=auth)
     account_type = get_value_by_key(auth.account_type, ACCOUNT_MAPPING)
-    check_database_restriction = get_value_by_key(account_type, DATABASE_RESTRICTIONS)
+    database_restriction = get_value_by_key(account_type, DATABASE_RESTRICTIONS)
 
-    if check_database_restriction == 0:
-        return False
+    if database_restriction == 0:
+        return False, 0, account_type
 
-    if check_database_restriction == 1:
-        return True
+    if database_restriction == 'unlimited':
+        return True, 'unlimited', account_type
 
-    if check_database_restriction < len(databases):
-        return True
+    if database_restriction > len(databases):
+        return True, database_restriction - len(databases), account_type
 
-    return False
-
-# def check_predictions_restrictions(auth):
-   
+    return False, 0, account_type

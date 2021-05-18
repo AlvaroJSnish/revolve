@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView, ListAPIView
 from rest_framework.response import Response
 
-from common.restrictions import check_database_restrictions
 from common.serializers import GenericPaginationSerializer
 from databases.classes import DatabaseConnector
 from databases.models import Database
@@ -33,15 +32,15 @@ class DatabasesViewSet(ListCreateAPIView):
         auth = authenticate(request)
 
         if auth:
-            available = check_database_restrictions(auth)
+            # available = check_database_restrictions(auth)
 
-            if available:
-                if not serializer.is_valid():
-                    result_status = status.HTTP_400_BAD_REQUEST
-                    result_dict["reasons"] = serializer.errors
-                else:
-                    database = serializer.save()
-                    result_dict = DatabaseSerializer(database).data
+            # if available:
+            if not serializer.is_valid():
+                result_status = status.HTTP_400_BAD_REQUEST
+                result_dict["reasons"] = serializer.errors
+            else:
+                database = serializer.save()
+                result_dict = DatabaseSerializer(database).data
         else:
             result_status = status.HTTP_401_UNAUTHORIZED
             result_status["reasons"] = 'Not authorized'
