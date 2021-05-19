@@ -16,6 +16,8 @@ class Project(BaseModel):
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_project')
     finished = models.BooleanField(default=False)
+    configured_scheduled_training = models.BooleanField(default=False)
+    created_from_database = models.BooleanField(default=False)
 
 
 class ProjectConfiguration(BaseModel):
