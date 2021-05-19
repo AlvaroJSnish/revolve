@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from projects.models import Project, ProjectConfiguration
 from retrains.serializers import RetrainCreateSerializer
+from retrains.tasks import retrain_basic_regression_model
 
 
 class RetrainView(CreateAPIView):
@@ -33,6 +34,9 @@ class RetrainView(CreateAPIView):
                     result_dict["reasons"] = serializer.errors
                 else:
                     retrain = serializer.save()
+
+                    retrain_basic_regression_model.apply_async(args=[request.data, str(project.id)])
+
                     result_dict = RetrainCreateSerializer(retrain).data
 
         else:

@@ -1,16 +1,21 @@
-from celery.schedules import crontab
+from datetime import datetime, timedelta
 
-from celery import shared_task, on_after_configure
-
-
-@on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(
-        crontab(hour=7, minute=30, day_of_week=1),
-        test.s('Happy Mondays!'),
-    )
+from celery import shared_task
 
 
-@shared_task
-def test(arg):
-    print(arg)
+# from projects.models import Project
+
+
+@shared_task(name="Basic Regression Model Retraining")
+def retrain_basic_regression_model(request, project):
+    # project = Project.objects.get(id=project_id)
+    # db_connector = DatabaseConnector()
+
+    # retrain_basic_regression_model.apply_async(
+    #     (request.data, project.id),
+    #     eta=time)
+
+    time = datetime.utcnow() + timedelta(days=int(request['days']))
+    retrain_basic_regression_model.apply_async(args=[request, None], eta=time)
+
+    pass
