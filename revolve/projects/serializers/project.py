@@ -54,7 +54,7 @@ class ProjectConfigurationSerializer(ModelSerializer):
         model = ProjectConfiguration
         fields = ('id', 'project_type', 'project',
                   'trained', 'last_time_trained', 'configuration_file', 'accuracy', 'error', 'training_task_id',
-                  'training_task_status', 'correlation',)
+                  'training_task_status', 'correlation', 'created_from_database')
         read_only_fields = ('id', 'configuration_file', 'project')
 
     def get_correlation(self, obj):

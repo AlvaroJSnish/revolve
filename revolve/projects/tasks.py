@@ -34,6 +34,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         deleted_columns = np.array(request['deleted_columns'])
 
         dataframe = None
+        database = None
 
         if from_database:
             database = Database.objects.get(id=request['database_id'])
@@ -77,7 +78,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         elapsed_time = timer.stop()
 
         # modify project config
-        project_configuration = update_project_configuration(project_configuration_id, error, accuracy)
+        project_configuration = update_project_configuration(project_configuration_id, error, accuracy, database)
 
         # pass info to websocket
         call_socket(message_type='updated_project',
@@ -97,15 +98,18 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         project_configuration.save(force_update=True)
 
 
-def update_project_configuration(project_configuration_id, error, accuracy):
+def update_project_configuration(project_configuration_id, error, accuracy, database):
     project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
     project_configuration.trained = True
     project_configuration.last_time_trained = timezone.now()
     project_configuration.accuracy = accuracy
     project_configuration.error = error
     project_configuration.training_task_status = 'SUCCESS'
-    project_configuration.save(force_update=True)
 
+    if database:
+        project_configuration.database = database
+
+    project_configuration.save(force_update=True)
     return project_configuration
 
 

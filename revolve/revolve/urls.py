@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/v1/', include(('projects.urls', 'projects'), namespace="projects")),
     path('api/v1/', include(('userstats.urls', 'userstats'), namespace="userstats")),
     path('api/v1/', include(('databases.urls', 'databases'), namespace="databases")),
+    path('api/v1/', include(('retrains.urls', 'retrains'), namespace="retrains")),
 ]

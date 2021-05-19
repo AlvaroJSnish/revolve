@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from common.base_models import BaseModel
+from databases.models import Database
 from users.models.user import User
 
 
@@ -16,8 +17,6 @@ class Project(BaseModel):
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_project')
     finished = models.BooleanField(default=False)
-    configured_scheduled_training = models.BooleanField(default=False)
-    created_from_database = models.BooleanField(default=False)
 
 
 class ProjectConfiguration(BaseModel):
@@ -50,6 +49,9 @@ class ProjectConfiguration(BaseModel):
     error = models.FloatField(blank=True, null=True)
     training_task_id = models.UUIDField(blank=True, null=True)
     training_task_status = models.CharField(max_length=40, choices=TaskStatus.choices, default=TaskStatus.PENDING)
+    configured_scheduled_training = models.BooleanField(default=False)
+    created_from_database = models.BooleanField(default=False)
+    database = models.OneToOneField(Database, on_delete=models.CASCADE, related_name='project_database', null=True)
 
 
 class ProjectConfigFile(BaseModel):

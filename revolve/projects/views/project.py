@@ -223,6 +223,7 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
                     project_configuration.training_task_id = task.id
                     project_configuration.training_task_status = task.state
                     project_configuration.last_time_trained = timezone.now()
+                    project_configuration.created_from_database = from_database
                     project_configuration.save(force_update=True)
                 except ValueError:
                     print(ValueError)
