@@ -62,7 +62,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
                         deleted_columns=deleted_columns,
                         project_configuration_id=project_configuration_id,
                         label=label,
-                        path=p_path
+                        path=p_path,
                     )
                 else:
                     raise Exception('Database connection failed')

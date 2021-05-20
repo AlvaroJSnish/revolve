@@ -1,3 +1,5 @@
+import os
+
 import joblib
 import numpy as np
 import xgboost
@@ -76,6 +78,9 @@ class BasicLinearModel:
             self.model.fit(self.X_train, self.y_train)
 
             print('-- Saving regressor')
+            if os.path.exists(self.path + '/model.joblib'):
+                os.remove(self.path + '/model.joblib')
+
             joblib.dump(self.model.best_estimator_, self.path + '/model.joblib')
         except ValueError as e:
             print('Oops, something went wrong fitting the model: ', e)

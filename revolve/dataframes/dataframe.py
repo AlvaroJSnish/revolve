@@ -85,8 +85,9 @@ class DataframeFromDB:
     dataframe_labels = None
     transformed_dataframe_features = None
     transformed_dataframe_labels = None
+    is_retrain = False
 
-    def __init__(self, data, all_columns, deleted_columns, label, path, project_configuration_id):
+    def __init__(self, data, all_columns, deleted_columns, label, path, project_configuration_id, is_retrain=False):
         self.data = data
         self.all_columns = all_columns
         self.saved_columns = all_columns
@@ -94,6 +95,7 @@ class DataframeFromDB:
         self.label = label
         self.path = path
         self.project_configuration_id = project_configuration_id
+        self.is_retrain = is_retrain
 
         self.build_data()
 
@@ -111,16 +113,29 @@ class DataframeFromDB:
         self.transformed_dataframe_labels = transform_label(self.dataframe_labels)
 
         dataframe.to_csv(self.path + '/dataframe.csv', index=False)
-        ProjectConfigFile.objects.create(
-            project_configuration_id=self.project_configuration_id,
-            file_url=self.path,
-            all_columns=self.all_columns.tolist(),
-            saved_columns=self.saved_columns.tolist(),
-            deleted_columns=self.deleted_columns.tolist(),
-            label=self.label,
-            final_data=self.dataframe_features.values.tolist(),
-            final_label=self.dataframe_labels.values.tolist()
-        )
+
+        if self.is_retrain:
+            ProjectConfigFile.objects.update(
+                project_configuration_id=self.project_configuration_id,
+                file_url=self.path,
+                all_columns=self.all_columns,
+                saved_columns=self.saved_columns,
+                deleted_columns=self.deleted_columns,
+                label=self.label,
+                final_data=self.dataframe_features.values.tolist(),
+                final_label=self.dataframe_labels.values.tolist()
+            )
+        else:
+            ProjectConfigFile.objects.create(
+                project_configuration_id=self.project_configuration_id,
+                file_url=self.path,
+                all_columns=self.all_columns.tolist(),
+                saved_columns=self.saved_columns.tolist(),
+                deleted_columns=self.deleted_columns.tolist(),
+                label=self.label,
+                final_data=self.dataframe_features.values.tolist(),
+                final_label=self.dataframe_labels.values.tolist()
+            )
 
     def get_transformed_data(self):
         return self.transformed_dataframe_features, self.transformed_dataframe_labels

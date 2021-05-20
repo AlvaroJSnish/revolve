@@ -1,3 +1,5 @@
+from re import sub
+
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -35,7 +37,10 @@ class RetrainView(CreateAPIView):
                 else:
                     retrain = serializer.save()
 
-                    retrain_basic_regression_model.apply_async(args=[request.data, str(project.id)])
+                    token = sub('Token ', '', self.request.META.get(
+                        'HTTP_AUTHORIZATION', None))
+
+                    retrain_basic_regression_model.apply_async(args=[request.data, str(project.id), token])
 
                     result_dict = RetrainCreateSerializer(retrain).data
 
