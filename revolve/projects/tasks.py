@@ -51,6 +51,8 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
                 cursor = connection.connect()
 
                 if cursor is not None:
+                    connection.create_records(table_name)
+                    connection.insert_records(table_name)
                     result = connection.execute_query(f'select * from {table_name}')
                     connection.disconnect()
 

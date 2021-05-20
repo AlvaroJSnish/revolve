@@ -77,3 +77,24 @@ class DatabaseConnector:
             result.append(row)
 
         return result
+
+    def create_records(self, table_name):
+        sql = f'create table revolve_{table_name}_trainings (id serial PRIMARY KEY, date TIMESTAMP not null)'
+        sql_clone_table = f'create table revolve_{table_name}_records as (select * from {table_name}) with no data'
+        self.cursor.execute(sql)
+        self.cursor.execute(sql_clone_table)
+        self.connection.commit()
+
+    def insert_records(self, table_name):
+        sql = f'select * from {table_name}'
+        self.cursor.execute(sql)
+
+        headers = ', '.join([desc[0] for desc in self.cursor.description])
+
+        for row in self.cursor.fetchall():
+            self.cursor.execute(
+                f'insert into revolve_{table_name}_records values {row}')
+
+        self.connection.commit()
+
+    # def update_trainings(self, table_name):
