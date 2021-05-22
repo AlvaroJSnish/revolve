@@ -1,24 +1,28 @@
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from common.serializers import GenericPaginationSerializer
 from groups.models import Group
-from groups.serializers import GroupSerializer
+from groups.serializers import GroupSerializer, GroupCreateSerializer, GroupsSerializer
 
 
 class GroupsViewSet(ListCreateAPIView):
-    serializer_class = GroupSerializer
     pagination_class = GenericPaginationSerializer
 
-    def get_queryset(self):
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return GroupCreateSerializer
+        else:
+            return GroupsSerializer
 
+    def get_queryset(self):
         user = authenticate(self.request)
 
         if user is not None:
-            return Group.objects.filter(Q(owner=user) | Q(users__in=user)).distinct().exclude(is_deleted=True)
+            return Group.objects.filter(Q(owner=user) | Q(users=user)).distinct().exclude(is_deleted=True)
         else:
             return None
 
@@ -35,9 +39,21 @@ class GroupsViewSet(ListCreateAPIView):
                 result_dict["reasons"] = serializer.errors
             else:
                 group = serializer.save()
-                result_dict = GroupSerializer(group).data
+                result_dict = GroupCreateSerializer(group).data
         else:
             result_status = status.HTTP_401_UNAUTHORIZED
             result_status["reasons"] = 'Not authorized'
 
         return Response(result_dict, status=result_status)
+
+
+class GroupViewSet(RetrieveAPIView):
+    serializer_class = GroupSerializer
+
+    def get_object(self, queryset=None):
+        auth = authenticate(self.request)
+
+        if auth:
+            return Group.objects.get(id=self.kwargs['group_id'])
+        else:
+            return None
