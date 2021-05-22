@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
-from common.restrictions import check_projects_restrictions, check_database_restrictions
+from common.restrictions import check_projects_restrictions, check_database_restrictions, check_groups_restrictions
 from common.serializers import GenericPaginationSerializer
 from users.models.user import User
 from users.serializers.user import UsersSerializer
@@ -68,6 +68,28 @@ class CheckUserDatabases(ListAPIView):
             return Response(result_dict, result_status)
         else:
             available, slots, account_type = check_database_restrictions(user)
+
+            result_dict['available'] = available
+            result_dict['slots'] = slots
+            result_dict['account_type'] = account_type
+
+            result_status = status.HTTP_200_OK
+
+            return Response(result_dict, status=result_status)
+
+
+class CheckUserGroups(ListAPIView):
+    def get(self, request, *args, **kwargs):
+        result_dict = {}
+
+        user = authenticate(self.request)
+
+        if user is None:
+            result_dict['reasons'] = 'Please authenticate'
+            result_status = status.HTTP_401_UNAUTHORIZED
+            return Response(result_dict, result_status)
+        else:
+            available, slots, account_type = check_groups_restrictions(user)
 
             result_dict['available'] = available
             result_dict['slots'] = slots

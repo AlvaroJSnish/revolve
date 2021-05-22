@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'userstats',
     'databases',
     'retrains',
+    'groups',
 
     # other frameworks
     'rest_framework',

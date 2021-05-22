@@ -1,4 +1,7 @@
+from django.db.models import Q
+
 from databases.models import Database
+from groups.models import Group
 from projects.models import Project
 
 ACCOUNT_MAPPING = {
@@ -14,6 +17,12 @@ PROJECT_RESTRICTIONS = {
 }
 
 DATABASE_RESTRICTIONS = {
+    "TRIAL_ACCOUNT": 0,
+    "BASIC_ACCOUNT": 3,
+    "PREMIUM_ACCOUNT": 'unlimited'
+}
+
+GROUPS_RESTRICTIONS = {
     "TRIAL_ACCOUNT": 0,
     "BASIC_ACCOUNT": 3,
     "PREMIUM_ACCOUNT": 'unlimited'
@@ -51,5 +60,22 @@ def check_database_restrictions(auth):
 
     if database_restriction > len(databases):
         return True, database_restriction - len(databases), account_type
+
+    return False, 0, account_type
+
+
+def check_groups_restrictions(auth):
+    groups = Group.objects.filter(Q(owner=auth) | Q(users=auth))
+    account_type = get_value_by_key(auth.account_type, ACCOUNT_MAPPING)
+    groups_restriction = get_value_by_key(account_type, GROUPS_RESTRICTIONS)
+
+    if groups_restriction == 0:
+        return False, 0, account_type
+
+    if groups_restriction == 'unlimited':
+        return True, 'unlimited', account_type
+
+    if groups_restriction > len(groups):
+        return True, groups_restriction - len(groups), account_type
 
     return False, 0, account_type
