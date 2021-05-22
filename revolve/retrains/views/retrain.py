@@ -6,6 +6,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 
 from projects.models import Project, ProjectConfiguration
+from retrains.models import Retrain
 from retrains.serializers import RetrainCreateSerializer
 from retrains.tasks import retrain_basic_regression_model
 
@@ -35,12 +36,17 @@ class RetrainView(CreateAPIView):
                     result_status = status.HTTP_400_BAD_REQUEST
                     result_dict["reasons"] = serializer.errors
                 else:
-                    retrain = serializer.save()
+                    retrain_s = serializer.save()
 
                     token = sub('Token ', '', self.request.META.get(
                         'HTTP_AUTHORIZATION', None))
 
-                    retrain_basic_regression_model.apply_async(args=[request.data, str(project.id), token])
+                    task = retrain_basic_regression_model.apply_async(args=[request.data, str(project.id), token])
+
+                    retrain = Retrain.objects.get(id=retrain_s.id)
+
+                    retrain.task_id = task.id
+                    retrain.save(force_update=True)
 
                     result_dict = RetrainCreateSerializer(retrain).data
 

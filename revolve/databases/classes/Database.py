@@ -45,7 +45,7 @@ class DatabaseConnector:
 
     def get_tables(self):
         self.cursor.execute("""SELECT table_name FROM information_schema.tables
-               WHERE table_schema = 'public'""")
+               WHERE table_schema = 'public' AND table_name not like 'revolve_%'""")
         tables = []
         for table in self.cursor.fetchall():
             tables.append(table)

@@ -114,18 +114,7 @@ class DataframeFromDB:
 
         dataframe.to_csv(self.path + '/dataframe.csv', index=False)
 
-        if self.is_retrain:
-            ProjectConfigFile.objects.update(
-                project_configuration_id=self.project_configuration_id,
-                file_url=self.path,
-                all_columns=self.all_columns,
-                saved_columns=self.saved_columns,
-                deleted_columns=self.deleted_columns,
-                label=self.label,
-                final_data=self.dataframe_features.values.tolist(),
-                final_label=self.dataframe_labels.values.tolist()
-            )
-        else:
+        if not self.is_retrain:
             ProjectConfigFile.objects.create(
                 project_configuration_id=self.project_configuration_id,
                 file_url=self.path,
