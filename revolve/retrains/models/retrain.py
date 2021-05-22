@@ -12,11 +12,11 @@ class Retrain(BaseModel):
     name = 'Retrain'
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    owner = models.ForeignKey(
+    owner = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='user_retrain')
-    database = models.ForeignKey(
+    database = models.OneToOneField(
         Database, on_delete=models.CASCADE, related_name='database_retrain')
-    project = models.ForeignKey(
+    project = models.OneToOneField(
         Project, on_delete=models.CASCADE, related_name='project_retrain')
     scheduled = models.BooleanField(default=False)
     scheduled_every = models.IntegerField(null=True, choices=((5, 5), (7, 7), (14, 14), (31, 31)))

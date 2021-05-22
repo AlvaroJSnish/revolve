@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, SerializerMethodField
 
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
+from retrains.serializers import RetrainSerializer
 from users.serializers import UsersSerializer
 
 
@@ -78,11 +79,12 @@ class ProjectSerializer(ModelSerializer):
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
         read_only=False, many=False, required=False)
+    project_retrain = RetrainSerializer(read_only=True, many=False, required=False)
 
     class Meta:
         model = Project
-        fields = ('id', 'project_name', 'owner', 'project_configuration')
-        read_only_fields = ('id', 'project_name', 'owner',)
+        fields = ('id', 'project_name', 'owner', 'project_configuration', 'project_retrain')
+        read_only_fields = ('id', 'project_name', 'owner', 'project_retrain')
 
     def create(self, validated_data):
         user = None

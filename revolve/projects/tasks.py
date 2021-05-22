@@ -29,7 +29,6 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         os.makedirs('uploads/' + request['file_url'])
         p_path = 'uploads/' + request['file_url']
         label = request['label']
-        table_name = request['table_name']
         all_columns = np.array(request['all_columns'])
         deleted_columns = np.array(request['deleted_columns'])
 
@@ -37,6 +36,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         database = None
 
         if from_database:
+            table_name = request['table_name']
             database = Database.objects.get(id=request['database_id'])
 
             if database is not None:

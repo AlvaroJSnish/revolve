@@ -8,7 +8,7 @@ from common.serializers import GenericPaginationSerializer
 from databases.classes import DatabaseConnector
 from databases.models import Database
 from databases.serializers import DatabaseSerializer, DatabasesSerializer
-from projects.models import Project, ProjectConfiguration
+from projects.models import Project
 from projects.serializers import ProjectSerializer
 
 
@@ -132,22 +132,7 @@ class DatabaseTables(ListAPIView):
 
                 table_names = [table[0] for table in tables]
 
-                projects = [project for project in Project.objects.filter(project_name__in=table_names)]
-                tables_with_projects = [config.project for config in
-                                        ProjectConfiguration.objects.filter(project__in=projects,
-                                                                            created_from_database=True)]
-
-                result = []
-
-                for table in table_names:
-                    for table_with_project in tables_with_projects:
-                        if table == table_with_project.project_name:
-                            result.append({'table': table, 'has_project': True,
-                                           'project': ProjectSerializer(table_with_project).data})
-                        else:
-                            result.append({'table': table, 'has_project': False, 'project': None})
-
-                result_dict['tables'] = result
+                result_dict['tables'] = table_names
                 connection.disconnect()
 
         else:
@@ -183,6 +168,19 @@ class DatabaseGetTable(ListAPIView):
                 return Response(result_dict, status=result_status)
             else:
                 rows = connection.get_table(table_name=self.kwargs['table_name'], with_headers=True)
+
+                filtered_projects = Project.objects.filter(owner=auth)
+                projects_config_from_db = [project for project in filtered_projects if
+                                           project.project_configuration.created_from_database and project.project_name ==
+                                           self.kwargs['table_name']]
+
+                if len(projects_config_from_db):
+                    result_dict['project'] = ProjectSerializer(projects_config_from_db[0]).data
+                    result_dict['has_project'] = True
+                else:
+                    result_dict['project'] = None
+                    result_dict['has_project'] = False
+
                 result_dict['rows'] = rows
                 connection.disconnect()
 

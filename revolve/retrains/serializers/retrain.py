@@ -1,15 +1,19 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
-from databases.serializers import DatabaseSerializer
-from projects.serializers import ProjectSerializer
 from retrains.models import Retrain
-from users.serializers import UsersSerializer
+
+
+class RetrainSerializer(ModelSerializer):
+    class Meta:
+        model = Retrain
+        fields = (
+            'id', 'scheduled_every', 'scheduled', 'task_id',)
 
 
 class RetrainCreateSerializer(ModelSerializer):
-    owner = UsersSerializer(read_only=True)
-    database = DatabaseSerializer(read_only=True)
-    project = ProjectSerializer(read_only=True)
+    owner = PrimaryKeyRelatedField(read_only=True)
+    database = PrimaryKeyRelatedField(read_only=True)
+    project = PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Retrain
