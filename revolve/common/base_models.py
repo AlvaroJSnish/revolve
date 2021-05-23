@@ -62,7 +62,7 @@ class SensibleDataModel(SoftDeletionModel):
 class BaseModel(SoftDeletionModel):
     class Meta:
         abstract = True
-        ordering = ['-id']
+        ordering = ['-updated_at']
 
     def __str__(self):
         return self.name

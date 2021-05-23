@@ -14,11 +14,12 @@ class GroupsSerializer(ModelSerializer):
 
 
 class GroupCreateSerializer(ModelSerializer):
-    owner = UsersSerializer(many=False)
+    owner = UsersSerializer(many=False, required=False)
 
     class Meta:
         model = Group
         fields = ('id', 'group_name', 'owner')
+        read_only_fields = ('owner',)
 
     def create(self, validated_data):
         user = None

@@ -13,12 +13,12 @@ class Group(BaseModel):
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     group_name = models.TextField(blank=False, null=False)
-    owner = models.OneToOneField(
+    owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='group_owner')
     users = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='group_databases')
+        User, on_delete=models.CASCADE, related_name='group_databases', null=True, blank=True)
     databases = models.ForeignKey(
-        Database, on_delete=models.CASCADE, related_name='group_databases')
+        Database, on_delete=models.CASCADE, related_name='group_databases', null=True, blank=True)
     projects = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name='group_projects')
+        Project, on_delete=models.CASCADE, related_name='group_projects', null=True, blank=True)
     invitation_code = models.UUIDField(default=uuid4)

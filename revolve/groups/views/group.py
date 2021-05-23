@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveDestroyAPIView
 from rest_framework.response import Response
 
 from common.serializers import GenericPaginationSerializer
@@ -47,7 +47,7 @@ class GroupsViewSet(ListCreateAPIView):
         return Response(result_dict, status=result_status)
 
 
-class GroupViewSet(RetrieveAPIView):
+class GroupViewSet(RetrieveDestroyAPIView):
     serializer_class = GroupSerializer
 
     def get_object(self, queryset=None):
