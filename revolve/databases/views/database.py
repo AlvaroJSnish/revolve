@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from common.serializers import GenericPaginationSerializer
 from databases.classes import DatabaseConnector
 from databases.models import Database
-from databases.serializers import DatabaseSerializer, DatabasesSerializer
+from databases.serializers import DatabaseSerializer, DatabasesSerializer, DatabasesLiteSerializer
 from projects.models import Project
 from projects.serializers import ProjectSerializer
 
@@ -48,6 +48,20 @@ class DatabasesViewSet(ListCreateAPIView):
             result_status["reasons"] = 'Not authorized'
 
         return Response(result_dict, status=result_status)
+
+
+class DatabasesLite(ListAPIView):
+    serializer_class = DatabasesLiteSerializer
+
+    def get_queryset(self):
+        filter_params = Q()
+
+        user = authenticate(self.request)
+
+        if user is not None:
+            return Database.objects.filter(filter_params, owner=user).distinct().exclude(is_deleted=True)
+        else:
+            return None
 
 
 class DatabaseViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):

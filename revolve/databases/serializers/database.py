@@ -17,6 +17,13 @@ class DatabaseSerializer(ModelSerializer):
         database_id = self.context['view'].kwargs.get('database_id')
 
 
+class DatabasesLiteSerializer(ModelSerializer):
+    class Meta:
+        model = Database
+        fields = ('id', 'database_name',)
+        read_only_fields = ('id', 'database_name',)
+
+
 class DatabasesSerializer(ModelSerializer):
     owner = UsersSerializer(read_only=True)
 

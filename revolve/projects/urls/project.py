@@ -2,7 +2,7 @@ from django.urls import re_path
 
 from projects.views import ProjectsViewSet, ProjectViewSet, ProjectConfigurationCreateViewSet, \
     ProjectConfigurationViewSet, ProjectConfigurationFilesCreateViewSet, ProjectConfigurationFilesViewSet, ProjectCSV, \
-    ProjectModelAPI
+    ProjectModelAPI, ProjectsLite
 
 urlpatterns = [
     re_path(r'^projects/?$', ProjectsViewSet.as_view(), name="projects"),
@@ -24,4 +24,5 @@ urlpatterns = [
         name="project_configuration_file_retreive_update_delete"),
     ## experimental
     re_path(r'^project-file/?$', ProjectCSV.as_view(), name="project-csv"),
+    re_path(r'^projects-lite/?$', ProjectsLite.as_view(), name="projects_lite"),
 ]

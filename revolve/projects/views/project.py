@@ -11,14 +11,15 @@ from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, CreateAPIView, ListAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from common.restrictions import check_projects_restrictions
 from common.serializers import GenericPaginationSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
-from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer
+from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer, \
+    ProjectLiteSerializer
 from projects.tasks import train_basic_regression_model
 from userstats.models import ProjectVisits
 
@@ -69,6 +70,20 @@ class ProjectsViewSet(ListCreateAPIView):
             result_status["reasons"] = 'Not authorized'
 
         return Response(result_dict, status=result_status)
+
+
+class ProjectsLite(ListAPIView):
+    serializer_class = ProjectLiteSerializer
+
+    def get_queryset(self):
+        filter_params = Q()
+
+        user = authenticate(self.request)
+
+        if user:
+            return Project.objects.filter(filter_params, owner=user).distinct().exclude(is_deleted=True)
+        else:
+            return None
 
 
 class ProjectViewSet(CreateAPIView, RetrieveUpdateDestroyAPIView):
