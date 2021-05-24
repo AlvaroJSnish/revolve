@@ -14,3 +14,10 @@ class UserCreateSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'password')
+
+
+class UserLiteSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email')
+        read_only_fields = ('id', 'email')

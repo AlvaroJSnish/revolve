@@ -101,9 +101,16 @@ class ProjectSerializer(ModelSerializer):
 class ProjectsSerializer(ModelSerializer):
     owner = UsersSerializer(read_only=True)
     project_configuration = ProjectConfigurationSerializer(
-        read_only=False, many=True, required=False)
+        read_only=False, many=False, required=False)
 
     class Meta:
         model = Project
         fields = ('id', 'owner', 'project_configuration')
         read_only_fields = ('id', 'owner',)
+
+
+class ProjectLiteSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('id', 'project_name')
+        read_only_fields = ('id', 'project_name')

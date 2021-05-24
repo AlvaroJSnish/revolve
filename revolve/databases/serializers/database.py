@@ -34,3 +34,10 @@ class DatabasesSerializer(ModelSerializer):
             user = request.user
 
         return Database.objects.create(owner=user, **validated_data)
+
+
+class DatabaseLiteSerializer(ModelSerializer):
+    class Meta:
+        model = Database
+        fields = ('id', 'database_name')
+        read_only_fields = ('id', 'database_name')

@@ -1,8 +1,9 @@
 from rest_framework.serializers import ModelSerializer
 
-from databases.serializers import UsersSerializer, DatabasesSerializer
+from databases.serializers import UsersSerializer, DatabaseLiteSerializer
 from groups.models import Group
-from projects.serializers import ProjectSerializer
+from projects.serializers import ProjectLiteSerializer
+from users.serializers import UserLiteSerializer
 
 
 class GroupsSerializer(ModelSerializer):
@@ -32,9 +33,9 @@ class GroupCreateSerializer(ModelSerializer):
 
 class GroupSerializer(ModelSerializer):
     owner = UsersSerializer(many=False)
-    users = UsersSerializer(many=True, required=False)
-    databases = DatabasesSerializer(many=True, required=False)
-    projects = ProjectSerializer(many=True, required=False)
+    users = UserLiteSerializer(many=True, required=False)
+    databases = DatabaseLiteSerializer(many=True, required=False)
+    projects = ProjectLiteSerializer(many=True, required=False)
 
     class Meta:
         model = Group

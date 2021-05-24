@@ -15,10 +15,7 @@ class Group(BaseModel):
     group_name = models.TextField(blank=False, null=False)
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='group_owner')
-    users = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='group_databases', null=True, blank=True)
-    databases = models.ForeignKey(
-        Database, on_delete=models.CASCADE, related_name='group_databases', null=True, blank=True)
-    projects = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name='group_projects', null=True, blank=True)
+    users = models.ManyToManyField(User, related_name='group_databases')
+    databases = models.ManyToManyField(Database, related_name='group_databases')
+    projects = models.ManyToManyField(Project, related_name='group_projects')
     invitation_code = models.UUIDField(default=uuid4)
