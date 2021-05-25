@@ -133,11 +133,10 @@ class GroupAddUser(CreateAPIView):
         auth = authenticate(request)
 
         if auth:
-            invitation_code = request.data["invitation_code"]
+            invitation_code = self.kwargs['invitation_code']
 
             if invitation_code:
-                group_id = self.kwargs["group_id"]
-                group = Group.objects.get(id=group_id, invitation_code=invitation_code)
+                group = Group.objects.get(invitation_code=invitation_code)
 
                 group.users.add(auth)
                 group.save(force_update=True)

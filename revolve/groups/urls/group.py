@@ -12,7 +12,7 @@ urlpatterns = [
     re_path(r'^groups/(?P<group_id>[0-9_a-zA-Z\-]+)/add-database/(?P<database_id>[0-9_a-zA-Z\-]+)?$',
             GroupAddDatabase.as_view(),
             name="group_add_database"),
-    re_path(r'^groups/(?P<group_id>[0-9_a-zA-Z\-]+)/add-user?$',
+    re_path(r'^groups/add-user/(?P<invitation_code>[0-9_a-zA-Z\-]+)?$',
             GroupAddUser.as_view(),
             name="group_add_user"),
 ]
