@@ -34,6 +34,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
 
         dataframe = None
         database = None
+        csv_path = None
 
         if from_database:
             table_name = request['table_name']
@@ -53,7 +54,8 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
                 if cursor is not None:
                     connection.create_records(table_name)
                     connection.insert_records(table_name)
-                    result = connection.execute_query(f'select * from {table_name}')
+                    result = connection.execute_query(
+                        f'select * from {table_name}')
                     connection.disconnect()
 
                     dataframe = DataframeFromDB(
@@ -68,7 +70,8 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
                     raise Exception('Database connection failed')
         else:
             csv_path = 'temporary_csv/' + temporary_uuid + '.csv'
-            dataframe = Dataframe(csv_path, all_columns, deleted_columns, label, p_path, project_configuration_id)
+            dataframe = Dataframe(
+                csv_path, all_columns, deleted_columns, label, p_path, project_configuration_id)
 
         df_features, df_labels = dataframe.get_transformed_data()
 
@@ -80,7 +83,8 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         elapsed_time = timer.stop()
 
         # modify project config
-        project_configuration = update_project_configuration(project_configuration_id, error, accuracy, database)
+        project_configuration = update_project_configuration(
+            project_configuration_id, error, accuracy, database)
 
         # pass info to websocket
         call_socket(message_type='updated_project',
@@ -91,8 +95,13 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         create_stats(project_configuration=project_configuration, df_features=df_features,
                      elapsed_time=elapsed_time, error=error, accuracy=accuracy, token=token)
 
+        # clean
+        if csv_path:
+            shutil.rmtree('temporary_csv/' + temporary_uuid)
+
     except ValueError:
-        project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
+        project_configuration = ProjectConfiguration.objects.get(
+            id=project_configuration_id)
         shutil.rmtree('uploads/' + request['file_url'])
         project_configuration.trained = False
         project_configuration.last_time_trained = timezone.now()
@@ -101,7 +110,8 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
 
 
 def update_project_configuration(project_configuration_id, error, accuracy, database):
-    project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
+    project_configuration = ProjectConfiguration.objects.get(
+        id=project_configuration_id)
     project_configuration.trained = True
     project_configuration.last_time_trained = timezone.now()
     project_configuration.accuracy = accuracy
@@ -133,7 +143,7 @@ def create_stats(project_configuration, df_features, elapsed_time, error, accura
     user_stats = UserStats.objects.get(user=user)
     user_stats.regression_models_trained = user_stats.regression_models_trained + 1
     user_stats.average_accuracy = (user_stats.average_accuracy + accuracy) / (
-            user_stats.regression_models_trained + user_stats.classification_models_trained)
+        user_stats.regression_models_trained + user_stats.classification_models_trained)
     user_stats.average_error = (user_stats.average_error + error) / (
-            user_stats.regression_models_trained + user_stats.classification_models_trained)
+        user_stats.regression_models_trained + user_stats.classification_models_trained)
     user_stats.save(force_update=True)
