@@ -20,7 +20,7 @@ from common.serializers import GenericPaginationSerializer
 from projects.models import Project, ProjectConfiguration, ProjectConfigFile
 from projects.serializers import ProjectSerializer, ProjectConfigurationSerializer, ProjectFilesSerializer, \
     ProjectLiteSerializer
-from projects.tasks import train_basic_regression_model
+from projects.tasks import train_regression_model
 from userstats.models import ProjectVisits
 
 UPLOAD_DIR = '../../uploads/'
@@ -137,7 +137,8 @@ class ProjectCSV(ListCreateAPIView):
                 for column in csv.reader(io_string, delimiter=',', quotechar="|"):
                     writer.writerow(column)
 
-            df = pd.read_csv('temporary_csv/' + str(temporary_uuid) + '.csv', error_bad_lines=False).fillna('')
+            df = pd.read_csv('temporary_csv/' + str(temporary_uuid) +
+                             '.csv', error_bad_lines=False).fillna('')
             return Response({'temporary_uuid': str(temporary_uuid), 'columns': df.columns}, status=200)
         else:
             return None
@@ -210,7 +211,8 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
         result_dict = {}
 
         if auth:
-            file_url = request.data['project_id'] + '/' + request.data['project_configuration']
+            file_url = request.data['project_id'] + \
+                '/' + request.data['project_configuration']
             request.data['file_url'] = file_url
             temporary_uuid = request.data['temporary_uuid']
             from_database = request.data['from_database']
@@ -222,16 +224,18 @@ class ProjectConfigurationFilesCreateViewSet(ListCreateAPIView):
             else:
                 try:
                     project_configuration_id = self.kwargs['configuration_id']
-                    project_configuration = ProjectConfiguration.objects.get(id=project_configuration_id)
+                    project_configuration = ProjectConfiguration.objects.get(
+                        id=project_configuration_id)
 
                     token = sub('Token ', '', self.request.META.get(
                         'HTTP_AUTHORIZATION', None))
 
-                    task = train_basic_regression_model.delay(
+                    task = train_regression_model.delay(
                         request=request.data,
                         project_configuration_id=project_configuration_id,
                         temporary_uuid=temporary_uuid,
                         token=token,
+                        account_type=auth.account_type,
                         from_database=from_database,
                     )
 
@@ -271,14 +275,17 @@ class ProjectModelAPI(CreateAPIView):
 
         if user:
             project_id = self.kwargs['project_id']
-            project_config = ProjectConfiguration.objects.get(project_id=project_id)
-            project_config_file = ProjectConfigFile.objects.get(project_configuration=project_config)
+            project_config = ProjectConfiguration.objects.get(
+                project_id=project_id)
+            project_config_file = ProjectConfigFile.objects.get(
+                project_configuration=project_config)
             model_url = project_config_file.file_url
 
             model = joblib.load(model_url + '/model.joblib')
             values = request.data['values']
             np_values = np.array(list(values.values()))
-            converted_values = np.array([[round(float(item)) for item in np_values]])
+            converted_values = np.array(
+                [[round(float(item)) for item in np_values]])
 
             prediction = model.predict(converted_values)
 

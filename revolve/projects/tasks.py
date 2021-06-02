@@ -14,7 +14,7 @@ from common.token import sync_user_by_token
 from databases.classes import DatabaseConnector
 from databases.models import Database
 from dataframes import Dataframe, DataframeFromDB
-from nn_models import BasicLinearModel
+from nn_models import TrialLinearModel, BasicLinearModel, PremiumLinearModel
 from projects.models import ProjectConfiguration
 from projects.serializers import ProjectSerializer
 from stats.models import Stat
@@ -23,8 +23,8 @@ from userstats.models import UserStats
 channel_layer = get_channel_layer()
 
 
-@shared_task(name="Basic Regression Model Training")
-def train_basic_regression_model(request, project_configuration_id, temporary_uuid, token, from_database=False):
+@shared_task(name="Regression Model Training")
+def train_regression_model(request, project_configuration_id, temporary_uuid, token, account_type, from_database=False):
     try:
         os.makedirs('uploads/' + request['file_url'])
         p_path = 'uploads/' + request['file_url']
@@ -35,6 +35,7 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
         dataframe = None
         database = None
         csv_path = None
+        model = None
 
         if from_database:
             table_name = request['table_name']
@@ -77,7 +78,14 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
 
         timer = Timer()
         timer.start()
-        model = BasicLinearModel(df_features, df_labels, p_path)
+
+        if account_type == 1:
+            model = BasicLinearModel(df_features, df_labels, p_path)
+        elif account_type == 2:
+            model = PremiumLinearModel(df_features, df_labels, p_path)
+        else:
+            model = TrialLinearModel(df_features, df_labels, p_path)
+
         model.train_and_save()
         error, accuracy = model.get_metrics()
         elapsed_time = timer.stop()
@@ -97,7 +105,10 @@ def train_basic_regression_model(request, project_configuration_id, temporary_uu
 
         # clean
         if csv_path:
-            shutil.rmtree('temporary_csv/' + temporary_uuid)
+            try:
+                shutil.rmtree('temporary_csv/' + temporary_uuid)
+            except:
+                pass
 
     except ValueError:
         project_configuration = ProjectConfiguration.objects.get(

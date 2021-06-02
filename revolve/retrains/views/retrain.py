@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from projects.models import Project, ProjectConfiguration
 from retrains.models import Retrain
 from retrains.serializers import RetrainCreateSerializer
-from retrains.tasks import retrain_basic_regression_model
+from retrains.tasks import retrain_regression_model
 
 
 class RetrainView(CreateAPIView):
@@ -26,7 +26,8 @@ class RetrainView(CreateAPIView):
 
             if from_database:
                 project = Project.objects.get(id=project_id)
-                project_config = ProjectConfiguration.objects.get(project=project)
+                project_config = ProjectConfiguration.objects.get(
+                    project=project)
                 request.data['database'] = str(project_config.database.id)
                 request.data['project'] = project_id
 
@@ -41,7 +42,8 @@ class RetrainView(CreateAPIView):
                     token = sub('Token ', '', self.request.META.get(
                         'HTTP_AUTHORIZATION', None))
 
-                    task = retrain_basic_regression_model.apply_async(args=[request.data, str(project.id), token])
+                    task = retrain_regression_model.apply_async(
+                        args=[request.data, str(project.id), token, auth.account_type])
 
                     retrain = Retrain.objects.get(id=retrain_s.id)
 

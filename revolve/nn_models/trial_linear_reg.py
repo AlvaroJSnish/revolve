@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, RepeatedKFold
 
 
-class BasicLinearModel:
+class TrialLinearModel:
     label = np.array([])
     features = np.array([])
     path = ""
@@ -21,27 +21,14 @@ class BasicLinearModel:
 
     test_size = 0.2
 
-    folds = 10
-    param_comb = 5
+    folds = 3
+    param_comb = 1
     random_state = 1001
     n_estimators = 1000
     n_thread = 1
     n_jobs = 4
     param_distributions = {
         'learning_rate': [0.05, 0.10, 0.15],
-        'lambda': [0.0, 0.1, 0.2],
-        'alpha': [0.0, 0.1, 0.2],
-        'gamma': [0.0, 0.1, 0.2],
-        'tree_method': ['auto', 'exact', 'approx', 'hist', 'gpu_hist'],
-        # 'min_child_weight': [1, 3, 5, 7, 10],
-        # 'subsample': [0.6, 0.8, 1.0],
-        # 'max_depth': [3, 4, 5, 6, 8, 10, 12, 15, 17, 19, 21],
-        # 'n_estimators': [100, 200, 300, 500, 700, 1000],
-        # 'colsample_bytree': [0.3, 0.4, 0.6, 0.8, 1.0],
-        # 'colsample_bylevel': [0.3, 0.4, 0.6, 0.8, 1.0],
-        # 'colsample_bynode': [0.3, 0.4, 0.6, 0.8, 1.0],
-        # 'grow_policy': ['depthwise', 'lossguide'],
-        # 'max_bin': [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 240, 256]
     }
 
     accuracy = None

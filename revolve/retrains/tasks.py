@@ -9,7 +9,7 @@ from common.timer import Timer
 from databases.classes import DatabaseConnector
 from databases.models import Database
 from dataframes import DataframeFromDB
-from nn_models import BasicLinearModel
+from nn_models import TrialLinearModel, BasicLinearModel, PremiumLinearModel
 from projects.models import Project, ProjectConfigFile
 from projects.models import ProjectConfiguration
 from projects.serializers import ProjectSerializer
@@ -21,11 +21,12 @@ channel_layer = get_channel_layer()
 # from datetime import datetime, timedelta
 
 
-@shared_task(name="Basic Regression Model Retraining")
-def retrain_basic_regression_model(request, project_id, token):
+@shared_task(name="Regression Model Retraining")
+def retrain_regression_model(request, project_id, token, account_type):
     project = Project.objects.get(id=project_id)
     project_config = ProjectConfiguration.objects.get(project=project)
-    project_config_file = ProjectConfigFile.objects.get(project_configuration=project_config)
+    project_config_file = ProjectConfigFile.objects.get(
+        project_configuration=project_config)
 
     if project_config.created_from_database:
         database = Database.objects.get(id=project_config.database.id)
@@ -63,13 +64,21 @@ def retrain_basic_regression_model(request, project_id, token):
 
         timer = Timer()
         timer.start()
-        model = BasicLinearModel(df_features, df_labels, model_url)
+
+        if account_type == 1:
+            model = BasicLinearModel(df_features, df_labels, model_url)
+        elif account_type == 2:
+            model = PremiumLinearModel(df_features, df_labels, model_url)
+        else:
+            model = TrialLinearModel(df_features, df_labels, model_url)
+
         model.train_and_save()
         error, accuracy = model.get_metrics()
         elapsed_time = timer.stop()
 
         # modify project config
-        project_configuration = update_project_configuration(project_config.id, error, accuracy, database)
+        project_configuration = update_project_configuration(
+            project_config.id, error, accuracy, database)
 
         # pass info to websocket
         call_socket(message_type='updated_project',
@@ -81,4 +90,5 @@ def retrain_basic_regression_model(request, project_id, token):
                      elapsed_time=elapsed_time, error=error, accuracy=accuracy, token=token)
 
         time = datetime.utcnow() + timedelta(days=int(request['days']))
-        retrain_basic_regression_model.apply_async(args=[request, project_id, token], eta=time)
+        retrain_basic_regression_model.apply_async(
+            args=[request, project_id, token], eta=time)
