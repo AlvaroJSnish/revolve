@@ -22,9 +22,9 @@ class SignInView(GenericAPIView):
         result_status = status.HTTP_200_OK
         result_dict = {}
 
-        body = json.loads(request.body.decode('utf-8'))
-        email = body.get("email")
-        password = body.get("password")
+        # body = json.loads(request.body.decode('utf-8'))
+        email = request.data['email']
+        password = request.data['password']
 
         user = authenticate(request, email=email, password=password)
 
@@ -70,7 +70,8 @@ class SignUpView(CreateAPIView):
             result_dict["reasons"] = serializer.errors
         else:
             user_serialized = serializer.save()
-            user = authenticate(request, email=user_serialized.email, password=request.data['password'])
+            user = authenticate(
+                request, email=user_serialized.email, password=request.data['password'])
             login(request, user)
             result_status = status.HTTP_200_OK
             Token.objects.get_or_create(user=user)
